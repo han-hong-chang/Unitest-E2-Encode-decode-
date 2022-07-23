@@ -201,9 +201,9 @@ type MeasurementDataItem struct {
 type MeasurementRecord []MeasurementRecordItem
 
 type MeasurementRecordItem interface{} //Choose One
-type integer *uint64
-type real *float64 // Note: Type Conversion
-type noValue *int32
+type integer uint64
+type real float64 // Note: Type Conversion
+type noValue int32
 
 type E2SM_KPM_IndicationMessage_Format2 struct {
 	measData         MeasurementData
@@ -282,9 +282,8 @@ type NG_RANnodeUEXnAPID uint64
 
 type GlobalGNB_ID struct {
 	pLMNIdentity PLMNIdentity
-	gNB_ID       GNB_ID
+	gNB_ID       interface{} //Choose One
 }
-
 type GNB_ID struct {
 	gNB_ID BitString
 }
