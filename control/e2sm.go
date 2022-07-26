@@ -52,7 +52,8 @@ func E2smRanFunctionDefinitionDecode(str string) (RanFuncDef *E2SM_KPM_RANfuncti
 	RanFuncDef.ranFunction_Name.ranFunction_Description.Size = int(DecodedRanFuncDef.ranFunction_Name.ranFunction_Description.size)
 
 	if unsafe.Pointer(DecodedRanFuncDef.ranFunction_Name.ranFunction_Instance) != nil {
-		RanFuncDef.ranFunction_Name.ranFunction_Instance = (*int64)(DecodedRanFuncDef.ranFunction_Name.ranFunction_Instance)
+		ranFunction_Instance := int64(*DecodedRanFuncDef.ranFunction_Name.ranFunction_Instance)
+		RanFuncDef.ranFunction_Name.ranFunction_Instance = &ranFunction_Instance
 	}
 
 	if DecodedRanFuncDef.ric_EventTriggerStyle_List != nil {
