@@ -40,14 +40,57 @@ func TestE2smRanFunctionDefinitionDecode(t *testing.T) {
 }
 
 func TestE2smEventTriggerDefinitionEncode(t *testing.T) {
-	EventTriggerDefinition := make([]byte, 100)
+	Buffer := make([]byte, 100)
 	var Report_Period int64
 	Report_Period = 257
 
-	Buffer, err := E2smEventTriggerDefinitionEncode(EventTriggerDefinition, Report_Period)
+	NewBuffer, err := E2smEventTriggerDefinitionEncode(Buffer, Report_Period)
 	if err != nil {
 		t.Error("Failed to Encode EventTriggerDefinition, err = ", err)
 	}
-	fmt.Println(fmt.Sprintf("%x", Buffer))
+	fmt.Println(fmt.Sprintf("%x", NewBuffer))
 
+}
+
+func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
+	ActionDefinitionFmt1 := E2SM_KPM_ActionDefinition_Format1{
+		measInfoList: []MeasurementInfoItem{},
+		granulPeriod: 1,
+		cellGlobalID: nil,
+	}
+	Buffer := make([]byte, 100)
+
+	measName1 := PrintableString{
+		Buf:  []byte("RSRP"),
+		Size: 4,
+	}
+	measInfoItem1 := MeasurementInfoItem{
+		measType:      measName1,
+		labelInfoList: []LabelInfoItem{},
+	}
+	ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem1)
+
+	measName2 := PrintableString{
+		Buf:  []byte("RSRQ"),
+		Size: 4,
+	}
+	measInfoItem2 := MeasurementInfoItem{
+		measType:      measName2,
+		labelInfoList: []LabelInfoItem{},
+	}
+	ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem2)
+
+	measInfoItem3 := MeasurementInfoItem{
+		measType:      int64(10),
+		labelInfoList: []LabelInfoItem{},
+	}
+	ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem3)
+
+	fmt.Println(fmt.Sprintf("len = %d", len(ActionDefinitionFmt1.measInfoList)))
+
+	NewBuffer, err := E2smActionDefinitionFormat1Encode(Buffer, ActionDefinitionFmt1)
+	if err != nil {
+		t.Error("Failed to Encode EventTriggerDefinition, err = ", err)
+	}
+	fmt.Println(fmt.Sprintf("%x", NewBuffer))
 }
