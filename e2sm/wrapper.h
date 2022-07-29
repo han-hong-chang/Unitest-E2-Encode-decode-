@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 //Function Definition
-E2SM_KPM_RANfunction_Description_t *Decode_RAN_Function_Description(void *Buffer, size_t Buf_Size);
+E2SM_KPM_RANfunction_Description_t *Decode_RAN_Function_Description(void *Buffer, size_t Buf_Size, int AsnPrint_Flag);
 void Free_RAN_Function_Dscription(E2SM_KPM_RANfunction_Description_t *RAN_Function_Description);
 
 ssize_t Encode_Event_Trigger_Definition(void *Buffer, size_t Buf_Size, long Report_Period);

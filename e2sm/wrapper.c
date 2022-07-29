@@ -1,12 +1,14 @@
 #include <errno.h>
 #include "wrapper.h"
 
-E2SM_KPM_RANfunction_Description_t *Decode_RAN_Function_Description(void *Buffer, size_t Buf_Size){
+E2SM_KPM_RANfunction_Description_t *Decode_RAN_Function_Description(void *Buffer, size_t Buf_Size, int AsnPrint_Flag){
     asn_dec_rval_t Result;
     E2SM_KPM_RANfunction_Description_t *RAN_Function_Description = 0;
     Result = aper_decode_complete(NULL, &asn_DEF_E2SM_KPM_RANfunction_Description, (void **)&RAN_Function_Description, Buffer, Buf_Size);
     if(Result.code == RC_OK){
-        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_RANfunction_Description, RAN_Function_Description);
+        if(AsnPrint_Flag == 1){
+            asn_fprint(stderr,  &asn_DEF_E2SM_KPM_RANfunction_Description, RAN_Function_Description);
+        }
         return RAN_Function_Description;
     }else{
         ASN_STRUCT_FREE(asn_DEF_E2SM_KPM_RANfunction_Description, RAN_Function_Description);
@@ -51,12 +53,12 @@ MeasurementInfoItem_t *Pack_Measurement_Information(MeasurementTypeName_t *measN
     MeasurementInfoItem_t *MeasurementInformation = (MeasurementInfoItem_t*)malloc(sizeof(MeasurementInfoItem_t));
     assert(MeasurementInformation != 0);
 
-    if(measID != NULL){
-        MeasurementInformation->measType.present = MeasurementType_PR_measID;
-        MeasurementInformation->measType.choice.measID = *measID;
-    }else if(measName != NULL){
+    if(measName != NULL){
         MeasurementInformation->measType.present = MeasurementType_PR_measName;
         MeasurementInformation->measType.choice.measName = *measName;
+    }else if(measID != NULL){
+        MeasurementInformation->measType.present = MeasurementType_PR_measID;
+        MeasurementInformation->measType.choice.measID = *measID;
     }else{
         fprintf(stderr, "measID and measName are NULL \n");
         return NULL;

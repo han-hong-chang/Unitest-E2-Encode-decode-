@@ -6,17 +6,12 @@
 #include "E2SM-KPM-ActionDefinition-Format1.h"
 #include "wrapper.h"
 
-/*
-int main(){
-    printf("hello world\n") ;
-}
-*/
 void VerifyRANFunctionDefinitionDecoding();
 void VerifyEventTriggerDefinitionEncoding();
 void VerifyActionDefinitionEncoding();
 
 int main(){
-    VerifyEventTriggerDefinitionEncoding();
+    VerifyRANFunctionDefinitionDecoding();
     return 0;
 }
 
@@ -39,7 +34,7 @@ void VerifyRANFunctionDefinitionDecoding(){
         //printf("%d ", RanFunctionDefinitionByte[i/2]) ;
     }
     E2SM_KPM_RANfunction_Description_t *RanFunctionDefinition = 0;
-    RanFunctionDefinition = Decode_RAN_Function_Description((void *)RanFunctionDefinitionByte, sizeof(RanFunctionDefinitionByte));
+    RanFunctionDefinition = Decode_RAN_Function_Description((void *)RanFunctionDefinitionByte, sizeof(RanFunctionDefinitionByte),1);
     Free_RAN_Function_Dscription(RanFunctionDefinition);
 }
 
@@ -56,12 +51,14 @@ void VerifyEventTriggerDefinitionEncoding(){
     }else{
         fprintf(stderr, "After encoding EventTrigger Definition, Code Length = %ld\n", Coded_Size) ;
     }
-
-    fprintf(stderr, "\n\nTest Decode_Action_Definition_Format3_Byte Function\n\n") ;
+    
+    fprintf(stderr, "\n\nTest Decode EventTriggerDefinition\n\n") ;
 
     uint8_t *ReceiveBuffer = (uint8_t*)malloc(Coded_Size * sizeof(uint8_t) ) ;
     memcpy(ReceiveBuffer, Buffer, Coded_Size) ;
 
+    printf("\n");
+    
     asn_dec_rval_t Result;
     E2SM_KPM_EventTriggerDefinition_t *EventTrigger_Decode = 0;
     Result = aper_decode_complete(NULL, &asn_DEF_E2SM_KPM_EventTriggerDefinition, (void **)&EventTrigger_Decode, ReceiveBuffer, Coded_Size);
