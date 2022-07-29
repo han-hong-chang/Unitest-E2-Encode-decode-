@@ -34,7 +34,7 @@ func E2smRanFunctionDefinitionDecode(str string) (RanFuncDef *E2SM_KPM_RANfuncti
 	RanFuncDef = &E2SM_KPM_RANfunction_Description{}
 
 	// Call E2SM Wrapper to decode
-	DecodedRanFuncDef := C.Decode_RAN_Function_Description(cptr, C.size_t(len(Buffer)))
+	DecodedRanFuncDef := C.Decode_RAN_Function_Description(cptr, C.size_t(len(Buffer)), C.int(1))
 	if DecodedRanFuncDef == nil {
 		return RanFuncDef, errors.New("e2sm wrapper is unable to decode RANFunctionDescription due to wrong or invalid input")
 	}
@@ -136,12 +136,84 @@ func E2smEventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) (newBu
 	return
 }
 
-func E2smActionDefinitionEncode(Buffer []byte, Report_Period int64) (newBuffer []byte, err error) {
+func E2smActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1) (newBuffer []byte, err error) {
+	Measurement_Information_List := []C.MeasurementInfoItem_t{}
+
+	for i := 0; i < len(ActionDefinitionFmt1.measInfoList); i++ {
+		//Todo: Currently using default value
+		nolabel := int64(0)
+		LabelInfoItem := (*C.LabelInfoItem_t)(C.malloc(C.sizeof_LabelInfoItem_t))
+
+		LabelInfoItem.measLabel.noLabel = (*C.long)(unsafe.Pointer(&nolabel))
+		LabelInfoItem.measLabel.plmnID = nil
+		LabelInfoItem.measLabel.sliceID = nil
+		LabelInfoItem.measLabel.fiveQI = nil
+		LabelInfoItem.measLabel.qFI = nil
+		LabelInfoItem.measLabel.qCI = nil
+		LabelInfoItem.measLabel.qCImax = nil
+		LabelInfoItem.measLabel.qCImin = nil
+		LabelInfoItem.measLabel.aRPmax = nil
+		LabelInfoItem.measLabel.aRPmin = nil
+		LabelInfoItem.measLabel.bitrateRange = nil
+		LabelInfoItem.measLabel.layerMU_MIMO = nil
+		LabelInfoItem.measLabel.sUM = nil
+		LabelInfoItem.measLabel.distBinX = nil
+		LabelInfoItem.measLabel.distBinY = nil
+		LabelInfoItem.measLabel.distBinZ = nil
+		LabelInfoItem.measLabel.preLabelOverride = nil
+		LabelInfoItem.measLabel.startEndInd = nil
+		LabelInfoItem.measLabel.min = nil
+		LabelInfoItem.measLabel.max = nil
+		LabelInfoItem.measLabel.avg = nil
+
+		switch ActionDefinitionFmt1.measInfoList[i].measType.(type) {
+		case PrintableString:
+			//Using C to allocate memory for C structure
+			measName := (*C.MeasurementTypeName_t)(C.malloc(C.sizeof_MeasurementTypeName_t))
+
+			measName.buf = (*C.uchar)(C.CBytes(ActionDefinitionFmt1.measInfoList[i].measType.(PrintableString).Buf))
+			measName.size = C.size_t(len(ActionDefinitionFmt1.measInfoList[i].measType.(PrintableString).Buf))
+
+			MeasurementInfoItem := C.Pack_Measurement_Information(measName, nil, LabelInfoItem, C.size_t(1))
+			if MeasurementInfoItem == nil {
+				C.free(unsafe.Pointer(measName))
+				C.free(unsafe.Pointer(LabelInfoItem))
+				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Information_Item due to wrong or invalid input")
+			}
+			Measurement_Information_List = append(Measurement_Information_List, *MeasurementInfoItem)
+		case int64:
+			//Using C to allocate memory for C structure
+			measID := (*C.MeasurementTypeID_t)(C.malloc(C.sizeof_MeasurementTypeID_t))
+
+			*measID = C.long(ActionDefinitionFmt1.measInfoList[i].measType.(int64))
+
+			MeasurementInfoItem := C.Pack_Measurement_Information(nil, measID, LabelInfoItem, C.size_t(1))
+			if MeasurementInfoItem == nil {
+				C.free(unsafe.Pointer(measID))
+				C.free(unsafe.Pointer(LabelInfoItem))
+				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Information_Item due to wrong or invalid input")
+			}
+			Measurement_Information_List = append(Measurement_Information_List, *MeasurementInfoItem)
+		default:
+		}
+
+	}
+
+	MeasurementInfoList := C.Pack_Measurement_Information_List(&Measurement_Information_List[0], C.size_t(len(ActionDefinitionFmt1.measInfoList)))
+	if MeasurementInfoList == nil {
+		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Measurement_Information_List due to wrong or invalid input")
+	}
+
+	ActionDefinition_Format1 := C.Pack_ActionDefinition_Format1(MeasurementInfoList, C.ulong(ActionDefinitionFmt1.granulPeriod), nil)
+	if ActionDefinition_Format1 == nil {
+		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack ActionDefinition_Format1 due to wrong or invalid input")
+	}
+
 	cptr := unsafe.Pointer(&Buffer[0])
 
-	Size := C.Encode_Event_Trigger_Definition(cptr, C.size_t(len(Buffer)), C.long(Report_Period))
+	Size := C.Encode_Action_Definition_Format1(cptr, C.size_t(len(Buffer)), ActionDefinition_Format1)
 	if Size < 0 {
-		return make([]byte, 0), errors.New("e2sm wrapper is unable to encode EventTriggerDefinition due to wrong or invalid input")
+		return make([]byte, 0), errors.New("e2sm wrapper is unable to encode Action_Definition_Format1 due to wrong or invalid input")
 	}
 	newBuffer = C.GoBytes(cptr, (C.int(Size)+7)/8)
 	return
