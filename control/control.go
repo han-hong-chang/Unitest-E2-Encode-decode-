@@ -14,7 +14,7 @@ type KPM struct {
 }
 
 //E2SM-KPMv2 OID
-const E2smOId string = "1.3.6.1.4.1.53148.1.2.2.2"
+const E2smKPMv2OId string = "1.3.6.1.4.1.53148.1.2.2.2"
 
 func (e *KPM) GetRanFunctionDefinition(NBId string) {
 	nodebInfor, err := xapp.Rnib.GetNodeb(NBId)
@@ -31,22 +31,19 @@ func (e *KPM) GetRanFunctionDefinition(NBId string) {
 		for i := 0; i < len(RanFunctionList); i++ {
 			RANFunction := RanFunctionList[i]
 
-			E2smRanFunctionDefinition, err := E2smRanFunctionDefinitionDecode(RANFunction.RanFunctionDefinition)
+			RanFunDef, err := E2smRanFunctionDefinitionDecode(RANFunction.RanFunctionDefinition)
 			if err != nil {
 				xapp.Logger.Warn("Failed to decode RAN Function Definition for NodeB Id %s, RanFunction Id = %d, err = %v", nodebInfor.RanName, RANFunction.RanFunctionId, err)
+			} else if string(RanFunDef.ranFunction_Name.ranFunction_E2SM_OID.Buf) == E2smKPMv2OId {
+				xapp.Logger.Debug("NodeB Id %s, RanFunction Id = %d, support E2SM-KPMv2, OID = %s, Append NodeB Id", nodebInfor.RanName, RANFunction.RanFunctionId, E2smKPMv2OId)
+				e.NodeBIdMap[nodebInfor.RanName] = RANFunction.RanFunctionId
+				HandleSubscription(nodebInfor.RanName, int64(RANFunction.RanFunctionId), RanFunDef)
+				// Todo: Handle Subscription Response
+				break
 			} else {
-				err := CheckE2smOId(E2smRanFunctionDefinition, E2smOId)
-				if err != nil {
-					xapp.Logger.Debug("NodeB Id %s, RanFunction Id = %d, E2SM OID doesn't match, expected is %s, have %s", nodebInfor.RanName, RANFunction.RanFunctionId, E2smOId, err)
-				} else {
-					xapp.Logger.Debug("NodeB Id %s, RanFunction Id = %d, support E2SM-KPMv2, OID = %s, Append NodeB Id", nodebInfor.RanName, RANFunction.RanFunctionId, E2smOId)
-					e.NodeBIdMap[nodebInfor.RanName] = RANFunction.RanFunctionId
-					SendSubscriptionTogNB(nodebInfor.RanName, RANFunction.RanFunctionId, E2smRanFunctionDefinition)
-					break
-				}
+				xapp.Logger.Debug("NodeB Id %s, RanFunction Id = %d, E2SM OID doesn't match, expected is %s, have %s", nodebInfor.RanName, RANFunction.RanFunctionId, E2smKPMv2OId, err)
 			}
 		}
-		xapp.Logger.Debug("NodeB Id %s doesn't support E2SM-KPMv2, discard NodeB", nodebInfor.RanName)
 
 	} else {
 		err = errors.New(fmt.Sprintf("KPM xApp doesn't support eNB %s", nodebInfor.RanName))
@@ -88,8 +85,6 @@ func (e *KPM) xAppStartCB(d interface{}) {
 }
 
 func (e *KPM) SdlNotificationCb(ch string, events ...string) {
-
-	// Todo: move to rnib handler
 	if len(events) == 0 {
 		xapp.Logger.Error("Invalid SDL notification received: %d", len(events))
 		return
