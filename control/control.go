@@ -1,8 +1,6 @@
 package control
 
 import (
-	"errors"
-	"fmt"
 	"strings"
 
 	"gerrit.o-ran-sc.org/r/ric-plt/xapp-frame/pkg/xapp"
@@ -15,6 +13,20 @@ type KPM struct {
 
 //E2SM-KPMv2 OID
 const E2smKPMv2OId string = "1.3.6.1.4.1.53148.1.2.2.2"
+
+func (e *KPM) HandleSubscription(RanName string, RanFunId int64, RanFunDef *E2SM_KPM_RANfunction_Description) {
+	SubscriptionRequestPayload, err := GenerateSubscriptionRequestPayload(RanName, RanFunId, RanFunDef)
+	if err != nil {
+		xapp.Logger.Error("Failed to generate subscription request payload for Ranname: %s, error: %v", RanName, err)
+	} else {
+		SubscriptionResponse, err := xapp.Subscription.Subscribe(SubscriptionRequestPayload)
+		if err != nil {
+			xapp.Logger.Error("Failed to send subscription request for Ranname: %s, error: %v", RanName, err)
+		} else {
+			xapp.Logger.Debug("Subscription Response Payload: %+v", SubscriptionResponse)
+		}
+	}
+}
 
 func (e *KPM) GetRanFunctionDefinition(NBId string) {
 	nodebInfor, err := xapp.Rnib.GetNodeb(NBId)
@@ -37,8 +49,7 @@ func (e *KPM) GetRanFunctionDefinition(NBId string) {
 			} else if string(RanFunDef.ranFunction_Name.ranFunction_E2SM_OID.Buf) == E2smKPMv2OId {
 				xapp.Logger.Debug("NodeB Id %s, RanFunction Id = %d, support E2SM-KPMv2, OID = %s, Append NodeB Id", nodebInfor.RanName, RANFunction.RanFunctionId, E2smKPMv2OId)
 				e.NodeBIdMap[nodebInfor.RanName] = RANFunction.RanFunctionId
-				HandleSubscription(nodebInfor.RanName, int64(RANFunction.RanFunctionId), RanFunDef)
-				// Todo: Handle Subscription Response
+				e.HandleSubscription(nodebInfor.RanName, int64(RANFunction.RanFunctionId), RanFunDef)
 				break
 			} else {
 				xapp.Logger.Debug("NodeB Id %s, RanFunction Id = %d, E2SM OID doesn't match, expected is %s, have %s", nodebInfor.RanName, RANFunction.RanFunctionId, E2smKPMv2OId, err)
@@ -46,7 +57,7 @@ func (e *KPM) GetRanFunctionDefinition(NBId string) {
 		}
 
 	} else {
-		err = errors.New(fmt.Sprintf("KPM xApp doesn't support eNB %s", nodebInfor.RanName))
+		xapp.Logger.Debug("KPM xApp doesn't support eNB %s", nodebInfor.RanName)
 	}
 }
 
