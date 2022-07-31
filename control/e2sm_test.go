@@ -58,39 +58,25 @@ func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
 		granulPeriod: 1,
 		cellGlobalID: nil,
 	}
-	Buffer := make([]byte, 100)
+	Buffer := make([]byte, 200)
 
-	measName1 := PrintableString{
-		Buf:  []byte("RSRP"),
-		Size: 4,
+	for i := 0; i < 10; i++ {
+		measName1 := PrintableString{
+			Buf:  []byte("RSRP"),
+			Size: 4,
+		}
+		measInfoItem1 := MeasurementInfoItem{
+			measType:      measName1,
+			labelInfoList: []LabelInfoItem{},
+		}
+		ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem1)
 	}
-	measInfoItem1 := MeasurementInfoItem{
-		measType:      measName1,
-		labelInfoList: []LabelInfoItem{},
-	}
-	ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem1)
-
-	measName2 := PrintableString{
-		Buf:  []byte("RSRQ"),
-		Size: 4,
-	}
-	measInfoItem2 := MeasurementInfoItem{
-		measType:      measName2,
-		labelInfoList: []LabelInfoItem{},
-	}
-	ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem2)
-
-	measInfoItem3 := MeasurementInfoItem{
-		measType:      int64(10),
-		labelInfoList: []LabelInfoItem{},
-	}
-	ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem3)
 
 	fmt.Println(fmt.Sprintf("len = %d", len(ActionDefinitionFmt1.measInfoList)))
 
 	NewBuffer, err := E2smActionDefinitionFormat1Encode(Buffer, ActionDefinitionFmt1)
 	if err != nil {
-		t.Error("Failed to Encode EventTriggerDefinition, err = ", err)
+		t.Error("Failed to Encode ActionDefinition, err = ", err)
 	}
 	fmt.Println(fmt.Sprintf("%x", NewBuffer))
 }

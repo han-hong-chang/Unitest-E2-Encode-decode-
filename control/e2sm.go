@@ -8,6 +8,7 @@ package control
 import "C"
 
 import (
+	"encoding/binary"
 	"errors"
 	"strconv"
 	"unsafe"
@@ -16,6 +17,18 @@ import (
 //type E2sm {}
 
 //type E2Handler interface{}
+func ByteSlice2Int64(BS []byte) (I int64) {
+	I = int64(binary.LittleEndian.Uint64(BS))
+	return
+}
+
+func ByteSlice2Int64Slice(BS []byte) (IS []int64) {
+	for i := 0; i < len(BS); i++ {
+		I := int64(BS[i])
+		IS = append(IS, I)
+	}
+	return
+}
 
 func ConvertStr2Byte(str string) (val []byte) {
 	length := len(str)
@@ -34,11 +47,12 @@ func E2smRanFunctionDefinitionDecode(str string) (RanFuncDef *E2SM_KPM_RANfuncti
 	RanFuncDef = &E2SM_KPM_RANfunction_Description{}
 
 	// Call E2SM Wrapper to decode
-	DecodedRanFuncDef := C.Decode_RAN_Function_Description(cptr, C.size_t(len(Buffer)), C.int(1))
+	DecodedRanFuncDef := C.Decode_RAN_Function_Description(cptr, C.size_t(len(Buffer)), C.int(0))
 	if DecodedRanFuncDef == nil {
 		return RanFuncDef, errors.New("e2sm wrapper is unable to decode RANFunctionDescription due to wrong or invalid input")
 	}
-	defer C.Free_RAN_Function_Dscription(DecodedRanFuncDef)
+	//Todo: if free the DecodedRanFuncDef here, it would encounter segmentation violation
+	//defer C.Free_RAN_Function_Dscription(DecodedRanFuncDef)
 
 	//Parse decoded Ranfunction Definition C structure to Golang Structure
 	RanFuncDef.ranFunction_Name = RANfunction_Name{}
@@ -137,9 +151,12 @@ func E2smEventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) (newBu
 }
 
 func E2smActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1) (newBuffer []byte, err error) {
-	Measurement_Information_List := []C.MeasurementInfoItem_t{}
 
-	for i := 0; i < len(ActionDefinitionFmt1.measInfoList); i++ {
+	Length := len(ActionDefinitionFmt1.measInfoList)
+	Measurement_Information_List := []*C.MeasurementInfoItem_t{}
+	Label_Information_List := []*C.LabelInfoItem_t{}
+
+	for i := 0; i < Length; i++ {
 		//Todo: Currently using default value
 		nolabel := int64(0)
 		LabelInfoItem := (*C.LabelInfoItem_t)(C.malloc(C.sizeof_LabelInfoItem_t))
@@ -166,6 +183,8 @@ func E2smActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_
 		LabelInfoItem.measLabel.max = nil
 		LabelInfoItem.measLabel.avg = nil
 
+		Label_Information_List = append(Label_Information_List, LabelInfoItem)
+
 		switch ActionDefinitionFmt1.measInfoList[i].measType.(type) {
 		case PrintableString:
 			//Using C to allocate memory for C structure
@@ -174,32 +193,30 @@ func E2smActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_
 			measName.buf = (*C.uchar)(C.CBytes(ActionDefinitionFmt1.measInfoList[i].measType.(PrintableString).Buf))
 			measName.size = C.size_t(len(ActionDefinitionFmt1.measInfoList[i].measType.(PrintableString).Buf))
 
-			MeasurementInfoItem := C.Pack_Measurement_Information(measName, nil, LabelInfoItem, C.size_t(1))
+			MeasurementInfoItem := C.Pack_Measurement_Information(measName, nil, &Label_Information_List[0], C.size_t(1))
 			if MeasurementInfoItem == nil {
 				C.free(unsafe.Pointer(measName))
-				C.free(unsafe.Pointer(LabelInfoItem))
 				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Information_Item due to wrong or invalid input")
 			}
-			Measurement_Information_List = append(Measurement_Information_List, *MeasurementInfoItem)
+			Measurement_Information_List = append(Measurement_Information_List, MeasurementInfoItem)
 		case int64:
 			//Using C to allocate memory for C structure
 			measID := (*C.MeasurementTypeID_t)(C.malloc(C.sizeof_MeasurementTypeID_t))
 
 			*measID = C.long(ActionDefinitionFmt1.measInfoList[i].measType.(int64))
 
-			MeasurementInfoItem := C.Pack_Measurement_Information(nil, measID, LabelInfoItem, C.size_t(1))
+			MeasurementInfoItem := C.Pack_Measurement_Information(nil, measID, &Label_Information_List[0], C.size_t(1))
 			if MeasurementInfoItem == nil {
 				C.free(unsafe.Pointer(measID))
-				C.free(unsafe.Pointer(LabelInfoItem))
 				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Information_Item due to wrong or invalid input")
 			}
-			Measurement_Information_List = append(Measurement_Information_List, *MeasurementInfoItem)
+			Measurement_Information_List = append(Measurement_Information_List, MeasurementInfoItem)
 		default:
 		}
 
 	}
 
-	MeasurementInfoList := C.Pack_Measurement_Information_List(&Measurement_Information_List[0], C.size_t(len(ActionDefinitionFmt1.measInfoList)))
+	MeasurementInfoList := C.Pack_Measurement_Information_List(&Measurement_Information_List[0], C.size_t(Length))
 	if MeasurementInfoList == nil {
 		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Measurement_Information_List due to wrong or invalid input")
 	}
