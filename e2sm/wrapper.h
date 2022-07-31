@@ -18,8 +18,8 @@ void Free_RAN_Function_Dscription(E2SM_KPM_RANfunction_Description_t *RAN_Functi
 
 ssize_t Encode_Event_Trigger_Definition(void *Buffer, size_t Buf_Size, long Report_Period);
 
-MeasurementInfoItem_t *Pack_Measurement_Information(MeasurementTypeName_t *measName, MeasurementTypeID_t *measID, LabelInfoItem_t *LabelInfor, size_t Count);
-MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t *Measurement_Information, size_t Count);
+MeasurementInfoItem_t *Pack_Measurement_Information(MeasurementTypeName_t *measName, MeasurementTypeID_t *measID, LabelInfoItem_t **LabelInfor, size_t Count);
+MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t **Measurement_Information, size_t Count);
 
 E2SM_KPM_ActionDefinition_Format1_t *Pack_ActionDefinition_Format1(MeasurementInfoList_t *measInfoList, GranularityPeriod_t granulPeriod, struct CGI *cellGlobalID);
 ssize_t Encode_Action_Definition_Format1(void *Buffer, size_t Buf_Size, E2SM_KPM_ActionDefinition_Format1_t *Format1);

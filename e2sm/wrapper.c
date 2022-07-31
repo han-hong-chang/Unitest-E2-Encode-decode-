@@ -49,7 +49,7 @@ ssize_t Encode_Event_Trigger_Definition(void *Buffer, size_t Buf_Size, long Repo
 
 }
 
-MeasurementInfoItem_t *Pack_Measurement_Information(MeasurementTypeName_t *measName, MeasurementTypeID_t *measID, LabelInfoItem_t *LabelInfor, size_t Count){
+MeasurementInfoItem_t *Pack_Measurement_Information(MeasurementTypeName_t *measName, MeasurementTypeID_t *measID, LabelInfoItem_t **LabelInfor, size_t Count){
     MeasurementInfoItem_t *MeasurementInformation = (MeasurementInfoItem_t*)malloc(sizeof(MeasurementInfoItem_t));
     assert(MeasurementInformation != 0);
 
@@ -71,7 +71,7 @@ MeasurementInfoItem_t *Pack_Measurement_Information(MeasurementTypeName_t *measN
         LabelInfoItem_t *Label_Information_Item = (LabelInfoItem_t*)malloc(sizeof(LabelInfoItem_t));
         assert(Label_Information_Item != 0);
 
-        Label_Information_Item = &LabelInfor[i];
+        Label_Information_Item = LabelInfor[i];
         ASN_SEQUENCE_ADD(&Label_Information_List->list, Label_Information_Item);
     }
 
@@ -79,7 +79,7 @@ MeasurementInfoItem_t *Pack_Measurement_Information(MeasurementTypeName_t *measN
     return MeasurementInformation;
 }
 
-MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t *Measurement_Information, size_t Count){
+MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t **Measurement_Information, size_t Count){
     MeasurementInfoList_t *Measurement_Information_List = (MeasurementInfoList_t *)malloc(sizeof(MeasurementInfoList_t));
     assert(Measurement_Information_List != 0);
 
@@ -87,7 +87,7 @@ MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t *
         MeasurementInfoItem_t *Measurement_Information_Item = (MeasurementInfoItem_t *)malloc(sizeof(MeasurementInfoItem_t));
         assert(Measurement_Information_Item != 0);
 
-        Measurement_Information_Item = &Measurement_Information[i];
+        Measurement_Information_Item = Measurement_Information[i];
         ASN_SEQUENCE_ADD(&Measurement_Information_List->list, Measurement_Information_Item);
     }
     return Measurement_Information_List;
