@@ -11,7 +11,7 @@ void VerifyEventTriggerDefinitionEncoding();
 void VerifyActionDefinitionEncoding();
 
 int main(){
-    VerifyRANFunctionDefinitionDecoding();
+    VerifyActionDefinitionEncoding();
     return 0;
 }
 
@@ -79,7 +79,7 @@ void VerifyActionDefinitionEncoding(){
     MeasurementTypeID_t MeaId;
     MeaId = 1;
 
-    LabelInfoItem_t LabInfoItem;
+    LabelInfoItem_t *LabInfoItem = malloc(sizeof(LabelInfoItem_t));
 
     MeasurementLabel_t measLabel;
     long int avg = MeasurementLabel__avg_true;
@@ -105,7 +105,7 @@ void VerifyActionDefinitionEncoding(){
     measLabel.startEndInd = NULL;
     measLabel.sUM = NULL;
     
-    LabInfoItem.measLabel = measLabel;
+    LabInfoItem->measLabel = measLabel;
 
     /*Test Pack_Measurement_Information Function */
     fprintf(stderr, "\n\nTest Pack_Measurement_Information Function\n\n") ;
@@ -118,7 +118,7 @@ void VerifyActionDefinitionEncoding(){
     fprintf(stderr, "\n\nTest Pack_Measurement_Information_List Function\n\n") ;
     MeasurementInfoList_t *MeaInforList = (MeasurementInfoList_t*)malloc(sizeof(MeasurementInfoList_t));
     assert(MeaInforList != 0);
-    MeaInforList = Pack_Measurement_Information_List(MeaInfor2, 1);
+    MeaInforList = Pack_Measurement_Information_List(&MeaInfor2, 1);
     asn_fprint(stderr,  &asn_DEF_MeasurementInfoList, MeaInforList);
 
     /*Test Pack_ActionDefinition_Format1 Function */
