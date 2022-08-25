@@ -61,6 +61,45 @@ func (e *KPM) GetRanFunctionDefinition(NBId string) {
 	}
 }
 
+func (e *KPM) HandleIndication(msg *xapp.RMRParams) (err error) {
+	// Check gNB Exist
+
+	// Using E2AP to decode RIC Indication
+	Indication, err := E2apRICIndicationDecode(msg.Payload)
+	if err != nil {
+		xapp.Logger.Error("Failed to decode RIC Indication: %v", err)
+		return
+	}
+
+	xapp.Logger.Debug("Successfully decode RIC Indication sent by gNB: %s", msg.Meid.RanName)
+
+	// Check Action Type
+
+	// Using E2SM-KPM to decode RIC Indication Header
+	IndicationHeader, err := E2smIndicationHeaderDecode(Indication.IndicationHeader)
+	if err != nil {
+		xapp.Logger.Error("Failed to decode RIC Indication Header: %v", err)
+		return
+	}
+
+	xapp.Logger.Debug("Successfully decode Indication Header with E2SM-KPM, got header format type %d", IndicationHeader.indicationHeader_FormatType)
+
+	// Using E2SM-KPM to decode RIC Indication Message
+	IndicationMessage, err := E2smIndicationMessageDecode(Indication.IndicationMessage)
+	if err != nil {
+		xapp.Logger.Error("Failed to decode RIC Indication Message: %v", err)
+		return
+	}
+
+	xapp.Logger.Debug("Successfully decode Indication Message with E2SM-KPM, got message format type %d", IndicationMessage.indicationMessage_FormatsType)
+
+	// Parse
+
+	// Store into InfluxDB
+
+	return
+}
+
 func (e *KPM) RMRMessageHandler(msg *xapp.RMRParams) {
 
 	xapp.Logger.Debug("Message received: name=%d meid=%s subId=%d txid=%s len=%d", msg.Mtype, msg.Meid.RanName, msg.SubId, msg.Xid, msg.PayloadLen)
@@ -69,13 +108,13 @@ func (e *KPM) RMRMessageHandler(msg *xapp.RMRParams) {
 	// RIC_INDICATION
 	case 12050:
 		xapp.Logger.Info("Recived RIC Indication")
-		//Todo: Decode Indication Message, Check NodeBId
+		go e.HandleIndication(msg)
 
 	// health check request
 	case 100:
 		xapp.Logger.Info("Received health check request")
 
-	// /unknown Message
+	// unknown Message
 	default:
 		xapp.Logger.Warn("Unknown message type '%d', discarding", msg.Mtype)
 	}
