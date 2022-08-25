@@ -310,6 +310,20 @@ type UEMeasurementReportItem struct {
 }
 
 /*E2APv2 Structure*/
+type RICIndication struct {
+	RequestorID           int32
+	RequestInstanceID     int32
+	RanfunctionID         int32
+	ActionID              int32
+	IndicationSN          int32 /*Optional*/
+	IndicationType        int32
+	IndicationHeader      []byte
+	IndicationHeaderSize  int32
+	IndicationMessage     []byte
+	IndicationMessageSize int32
+	CallProcessID         []byte /*Optional*/
+	CallProcessIDSize     int32  /*Optional*/
+}
 
 /*ASN.1 Structure*/
 type PrintableString OctetString
