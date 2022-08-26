@@ -14,33 +14,13 @@ import (
 	"unsafe"
 )
 
-//type E2sm {}
+//E2SM-KPMv2 OID
+const E2smKPMv2OId string = "1.3.6.1.4.1.53148.1.2.2.2"
 
-//type E2Handler interface{}
-func ByteSlice2Int64(BS []byte) (I int64) {
-	I = int64(binary.LittleEndian.Uint64(BS))
-	return
+type E2sm struct {
 }
 
-func ByteSlice2Int64Slice(BS []byte) (IS []int64) {
-	for i := 0; i < len(BS); i++ {
-		I := int64(BS[i])
-		IS = append(IS, I)
-	}
-	return
-}
-
-func ConvertStr2Byte(str string) (val []byte) {
-	length := len(str)
-	for i := 0; i < length/2; i++ {
-		SubStr := str[2*i : 2*i+2]
-		v, _ := strconv.ParseUint(SubStr, 16, 8)
-		val = append(val, byte(v))
-	}
-	return
-}
-
-func E2smRanFunctionDefinitionDecode(str string) (RanFuncDef *E2SM_KPM_RANfunction_Description, err error) {
+func (e *E2sm) RanFunctionDefinitionDecode(str string) (RanFuncDef *E2SM_KPM_RANfunction_Description, err error) {
 	Buffer := ConvertStr2Byte(str)
 
 	cptr := unsafe.Pointer(&Buffer[0])
@@ -139,7 +119,7 @@ func E2smRanFunctionDefinitionDecode(str string) (RanFuncDef *E2SM_KPM_RANfuncti
 	return
 }
 
-func E2smEventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) (newBuffer []byte, err error) {
+func (e *E2sm) EventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) (newBuffer []byte, err error) {
 	cptr := unsafe.Pointer(&Buffer[0])
 
 	Size := C.Encode_Event_Trigger_Definition(cptr, C.size_t(len(Buffer)), C.long(Report_Period))
@@ -150,7 +130,7 @@ func E2smEventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) (newBu
 	return
 }
 
-func E2smActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1) (newBuffer []byte, err error) {
+func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1) (newBuffer []byte, err error) {
 
 	Length := len(ActionDefinitionFmt1.measInfoList)
 	Measurement_Information_List := []*C.MeasurementInfoItem_t{}
@@ -236,7 +216,7 @@ func E2smActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_
 	return
 }
 
-func E2smIndicationHeaderDecode(Buffer []byte) (IndiHdr *E2SM_KPM_IndicationHeader, err error) {
+func (e *E2sm) IndicationHeaderDecode(Buffer []byte) (IndiHdr *E2SM_KPM_IndicationHeader, err error) {
 	cptr := unsafe.Pointer(&Buffer[0])
 	IndiHdr = &E2SM_KPM_IndicationHeader{}
 
@@ -300,7 +280,7 @@ func E2smIndicationHeaderDecode(Buffer []byte) (IndiHdr *E2SM_KPM_IndicationHead
 	return
 }
 
-func E2smIndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_IndicationMessage, err error) {
+func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_IndicationMessage, err error) {
 	cptr := unsafe.Pointer(&Buffer[0])
 	IndiMsg = &E2SM_KPM_IndicationMessage{}
 
@@ -1120,6 +1100,29 @@ func ParseUeId(ptr unsafe.Pointer) (ueID UEID) {
 	case 6: //Todo: en_gNB_UEID
 	case 7: //Todo: eNB_UEID
 	default:
+	}
+	return
+}
+
+func ByteSlice2Int64(BS []byte) (I int64) {
+	I = int64(binary.LittleEndian.Uint64(BS))
+	return
+}
+
+func ByteSlice2Int64Slice(BS []byte) (IS []int64) {
+	for i := 0; i < len(BS); i++ {
+		I := int64(BS[i])
+		IS = append(IS, I)
+	}
+	return
+}
+
+func ConvertStr2Byte(str string) (val []byte) {
+	length := len(str)
+	for i := 0; i < length/2; i++ {
+		SubStr := str[2*i : 2*i+2]
+		v, _ := strconv.ParseUint(SubStr, 16, 8)
+		val = append(val, byte(v))
 	}
 	return
 }

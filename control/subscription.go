@@ -27,9 +27,10 @@ func GetClientEndPoint() *apimodel.SubscriptionParamsClientEndpoint {
 }
 
 func GenerateEventTriggerDefinition() (EventTriggerDefinition []int64, err error) {
+	e2sm := &E2sm{}
 	Buffer := make([]byte, 100)
 
-	NewBuffer, err := E2smEventTriggerDefinitionEncode(Buffer, ReportPeriod)
+	NewBuffer, err := e2sm.EventTriggerDefinitionEncode(Buffer, ReportPeriod)
 	if err != nil {
 		return make([]int64, 0), err
 	}
@@ -79,7 +80,8 @@ func GenerateActionDefinitionFormat1(ReportStyleItem RIC_ReportStyle_Item) (Acti
 		cellGlobalID: nil,
 	}
 
-	ActionDefinition, err = E2smActionDefinitionFormat1Encode(Buffer, ActionDefinitionFormat1)
+	e2sm := &E2sm{}
+	ActionDefinition, err = e2sm.ActionDefinitionFormat1Encode(Buffer, ActionDefinitionFormat1)
 	return ActionDefinition, err
 }
 
