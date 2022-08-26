@@ -72,13 +72,16 @@ func (e *E2IfState) SdlNotificationCb(ch string, events ...string) { //Refer to 
 
 		//Check OID
 		RanFunctionId, RanFunctionDefinition := e.GetRanFunctionDefinitionByOid(nbId)
-		if RanFunctionDefinition != nil {
-			//Add to map
-			e.NbIdMap[nbId] = RanFunctionId
-
-			//Initiate Subscription Request Procedure
-			go e.control.HandleSubscription(nbId, RanFunctionId, RanFunctionDefinition)
+		if RanFunctionDefinition == nil {
+			xapp.Logger.Debug("Can't find E2SM-KPMv2 RanfunctionDefinition for %s", nbId)
+			return
 		}
+
+		//Add to map
+		e.NbIdMap[nbId] = RanFunctionId
+
+		//Initiate Subscription Request Procedure
+		go e.control.HandleSubscription(nbId, RanFunctionId, RanFunctionDefinition)
 
 	} else if strings.Contains(events[0], "_DISCONNECTED") {
 		nbId, err := ExtractNbiIdFromString(events[0])
@@ -121,7 +124,6 @@ func (e *E2IfState) ReadE2ConfigurationFromRnib() {
 				delete(e.NbIdMap, nbIdentity.InventoryName)
 				xapp.Logger.Debug("E2 connection DISCONNETED: %v", nbIdentity.InventoryName)
 
-				// Delete all subscriptions related to InventoryName/nbId
 			}
 			continue
 		}
@@ -129,14 +131,16 @@ func (e *E2IfState) ReadE2ConfigurationFromRnib() {
 		if _, ok := e.NbIdMap[nbIdentity.InventoryName]; !ok {
 			//Check OID
 			RanFunctionId, RanFunctionDefinition := e.GetRanFunctionDefinitionByOid(nbIdentity.InventoryName)
-			if RanFunctionDefinition != nil {
-				//Add to map
-				e.NbIdMap[nbIdentity.InventoryName] = RanFunctionId
-
-				//Initiate Subscription Request Procedure
-				go e.control.HandleSubscription(nbIdentity.InventoryName, RanFunctionId, RanFunctionDefinition)
+			if RanFunctionDefinition == nil {
+				xapp.Logger.Debug("Can't find E2SM-KPMv2 RanfunctionDefinition for %s", nbIdentity.InventoryName)
+				return
 			}
-			xapp.Logger.Debug("E2 connection CONNECTED: %v", nbIdentity.InventoryName)
+
+			//Add to map
+			e.NbIdMap[nbIdentity.InventoryName] = RanFunctionId
+
+			//Initiate Subscription Request Procedure
+			go e.control.HandleSubscription(nbIdentity.InventoryName, RanFunctionId, RanFunctionDefinition)
 		}
 	}
 }

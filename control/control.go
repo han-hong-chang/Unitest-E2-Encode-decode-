@@ -9,8 +9,8 @@ type Control struct {
 	e2IfState *E2IfState
 }
 
-func (c *Control) HandleSubscription(RanName string, RanFunId int64, RanFunDef *E2SM_KPM_RANfunction_Description) {
-	SubscriptionRequestPayload, err := GenerateSubscriptionRequestPayload(RanName, RanFunId, RanFunDef)
+func (c *Control) HandleSubscription(RanName string, RanFunId int64, RanfunctionDefinition *E2SM_KPM_RANfunction_Description) {
+	SubscriptionRequestPayload, err := GenerateSubscriptionRequestPayload(RanName, RanFunId, RanfunctionDefinition)
 	if err != nil {
 		xapp.Logger.Error("Failed to generate subscription request payload for Ran name: %s, error: %v", RanName, err)
 	} else {
