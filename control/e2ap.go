@@ -12,7 +12,10 @@ import (
 	"unsafe"
 )
 
-func E2apRICIndicationDecode(Payload []byte) (Indication *RICIndication, err error) {
+type E2ap struct {
+}
+
+func (e *E2ap) RICIndicationDecode(Payload []byte) (Indication *RICIndication, err error) {
 	cptr := unsafe.Pointer(&Payload[0])
 	Indication = &RICIndication{}
 
