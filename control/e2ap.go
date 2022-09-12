@@ -22,7 +22,7 @@ func (e *E2ap) RICIndicationDecode(Payload []byte) (Indication *RICIndication, e
 	// Call E2AP Wrapper to decode
 	DecodedIndication := C.Decode_RIC_Indication(cptr, C.size_t(len(Payload)))
 	if DecodedIndication == nil {
-		return DecodedIndication, errors.New("e2ap wrapper is unable to decode indication message due to wrong or invalid payload")
+		return nil, errors.New("e2ap wrapper is unable to decode indication message due to wrong or invalid payload")
 	}
 	defer C.Free_RIC_Indication(DecodedIndication)
 

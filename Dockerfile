@@ -11,7 +11,8 @@ WORKDIR /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm
 COPY . /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm
 
 # Compile E2AP
-RUN gcc -c -fPIC -I header/ lib/*.c  wrapper.c  && \ 
+RUN cd e2ap && \
+    gcc -c -fPIC -I header/ lib/*.c  wrapper.c  && \ 
     gcc *.o -shared -o libe2apwrapper.so && \
     cp libe2apwrapper.so /usr/local/lib/ && \
     mkdir /usr/local/include/e2ap && \
@@ -20,7 +21,8 @@ RUN gcc -c -fPIC -I header/ lib/*.c  wrapper.c  && \
     rm *.o
 
 # Compile E2SM
-RUN gcc -c -fPIC -I header/ lib/*.c  wrapper.c -lm  && \
+RUN cd e2sm && \
+    gcc -c -fPIC -I header/ lib/*.c  wrapper.c -lm  && \
     gcc *.o -shared -o libe2smwrapper.so && \
     cp libe2smwrapper.so /usr/local/lib/ && \
     mkdir /usr/local/include/e2sm && \
@@ -32,6 +34,8 @@ WORKDIR /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm
 
 RUN go version
 ENV GO111MODULE=on GO_ENABLED=0 GOOS=linux
+
+RUN go mod tidy
 
 RUN go build -a -installsuffix cgo -o kpm-app ./cmd/kpm.go
 
