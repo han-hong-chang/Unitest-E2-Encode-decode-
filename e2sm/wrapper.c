@@ -93,7 +93,7 @@ MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t *
     return Measurement_Information_List;
 }
 
-E2SM_KPM_ActionDefinition_Format1_t *Pack_ActionDefinition_Format1(MeasurementInfoList_t *measInfoList, GranularityPeriod_t granulPeriod, struct CGI *cellGlobalID){
+E2SM_KPM_ActionDefinition_Format1_t *Pack_ActionDefinition_Format1(MeasurementInfoList_t *measInfoList, GranularityPeriod_t granulPeriod, CGI_t *cellGlobalID){
     E2SM_KPM_ActionDefinition_Format1_t *Format1 = (E2SM_KPM_ActionDefinition_Format1_t *)malloc(sizeof(E2SM_KPM_ActionDefinition_Format1_t));
     assert(Format1 != 0);
 
@@ -223,7 +223,7 @@ MeasurementCondList_t *Pack_Measurement_Condition_List(MeasurementCondItem_t *Me
     return Measurement_Condition_List;
 }
 
-ssize_t Encode_Action_Definition_Format3(void *Buffer, size_t Buf_Size, MeasurementCondList_t *measCondList, GranularityPeriod_t granulPeriod, struct CGI *cellGlobalID){
+ssize_t Encode_Action_Definition_Format3(void *Buffer, size_t Buf_Size, MeasurementCondList_t *measCondList, GranularityPeriod_t granulPeriod, CGI_t *cellGlobalID){
     E2SM_KPM_ActionDefinition_t *Action_Definition = (E2SM_KPM_ActionDefinition_t *)malloc(sizeof(E2SM_KPM_ActionDefinition_t));
     if(!Action_Definition){
         fprintf(stderr,"Failed to allocate memory for E2SM_KPM_ActionDefinition_t\n") ;
