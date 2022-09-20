@@ -95,7 +95,11 @@ func (c *Control) Consume(msg *xapp.RMRParams) (err error) {
 }
 
 func (c *Control) xAppStartCB(d interface{}) {
+	//After rigistration complete, start to initiate the other functions.
 	xapp.Logger.Info("xApp ready call back received")
+
+	//Initiate E2IfState
+	c.e2IfState.Init(c)
 }
 
 func (c *Control) Run() {
@@ -104,9 +108,6 @@ func (c *Control) Run() {
 	xappversion := viper.GetString("version")
 	xapp.Logger.SetMdc("Name", xappname)
 	xapp.Logger.SetMdc("Version", xappversion)
-
-	//Initiate E2IfState
-	c.e2IfState.Init(c)
 
 	//When xApp is ready, it will reveive Callback
 	xapp.SetReadyCB(c.xAppStartCB, true)
