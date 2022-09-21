@@ -93,6 +93,31 @@ MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t *
     return Measurement_Information_List;
 }
 
+CGI_t *Pack_Cell_Global_Id(PLMNIdentity_t pLMNIdentity, NRCellIdentity_t *nRCellIdentity, EUTRACellIdentity_t *eUTRACellIdentity){
+    CGI_t *CGI = (CGI_t*)malloc(sizeof(CGI_t));
+    assert(CGI != 0);
+
+    if (nRCellIdentity != NULL){
+        CGI->present = CGI_PR_nR_CGI;
+        NR_CGI_t *NR_CGI = (NR_CGI_t*)malloc(sizeof(NR_CGI_t));
+        assert(NR_CGI != 0);
+
+        NR_CGI->nRCellIdentity = *nRCellIdentity;
+        NR_CGI->pLMNIdentity = pLMNIdentity;
+    } else if (eUTRACellIdentity != NULL){
+        CGI->present = CGI_PR_eUTRA_CGI;
+        EUTRA_CGI_t *EUTRA_CGI = (EUTRA_CGI_t*)malloc(sizeof(EUTRA_CGI_t));
+        assert(EUTRA_CGI != 0);
+
+        EUTRA_CGI->eUTRACellIdentity = *eUTRACellIdentity;
+        EUTRA_CGI->pLMNIdentity = pLMNIdentity;
+    } else {
+        fprintf(stderr, "nRCellIdentity and eUTRACellIdentity are NULL \n");
+        return NULL;
+    }
+    return CGI;
+}
+
 E2SM_KPM_ActionDefinition_Format1_t *Pack_ActionDefinition_Format1(MeasurementInfoList_t *measInfoList, GranularityPeriod_t granulPeriod, CGI_t *cellGlobalID){
     E2SM_KPM_ActionDefinition_Format1_t *Format1 = (E2SM_KPM_ActionDefinition_Format1_t *)malloc(sizeof(E2SM_KPM_ActionDefinition_Format1_t));
     assert(Format1 != 0);
