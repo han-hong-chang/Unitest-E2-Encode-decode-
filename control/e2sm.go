@@ -130,7 +130,7 @@ func (e *E2sm) EventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) 
 	return
 }
 
-func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1) (newBuffer []byte, err error) {
+func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1, CellGlobalId *CGI) (newBuffer []byte, err error) {
 
 	Length := len(ActionDefinitionFmt1.measInfoList)
 	Measurement_Information_List := []*C.MeasurementInfoItem_t{}
@@ -201,7 +201,49 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Measurement_Information_List due to wrong or invalid input")
 	}
 
-	ActionDefinition_Format1 := C.Pack_ActionDefinition_Format1(MeasurementInfoList, C.ulong(ActionDefinitionFmt1.granulPeriod), nil)
+	// Pack CGI
+	CGI := &C.CGI_t{}
+	CGI = nil // If CellGlobalId == nil, CGI == nil
+
+	if CellGlobalId != nil {
+		//Parse PLMNId
+		PLMNIdBuf, err := ParsePlmnId(CellGlobalId.pLMNIdentity)
+		if err != nil {
+			return make([]byte, 0), err
+		}
+
+		PlmnId := (*C.PLMNIdentity_t)(C.malloc(C.sizeof_PLMNIdentity_t))
+		PlmnId.buf = (*C.uchar)(C.CBytes(PLMNIdBuf))
+		PlmnId.size = C.size_t(3) //PLMNId use 3 Octets
+
+		// Parse CellId
+		NrCellId := &C.NRCellIdentity_t{}
+		NrCellId = nil
+		EutraCellId := &C.EUTRACellIdentity_t{}
+		EutraCellId = nil
+
+		if CellGlobalId.NodebType == 2 {
+
+			NrCellIdBuf, err := ParseCellId(CellGlobalId.CellIdentity)
+			if err != nil {
+				return make([]byte, 0), err
+			}
+
+			NrCellId = (*C.NRCellIdentity_t)(C.malloc(C.sizeof_NRCellIdentity_t))
+			NrCellId.buf = (*C.uchar)(C.CBytes(NrCellIdBuf))
+			NrCellId.size = C.size_t(5) // Total 5 Bytes = 40 bits, only use 36bits in 5G.
+			NrCellId.bits_unused = C.int(4)
+		} // Todo: add EutraCellId Support
+
+		//Pack into ASN.1 Format
+		CGI = C.Pack_Cell_Global_Id(PlmnId, NrCellId, EutraCellId)
+		if CGI == nil {
+			return make([]byte, 0), errors.New("e2sm wrapper is unable to pack CGI due to wrong or invalid input")
+		}
+
+	}
+
+	ActionDefinition_Format1 := C.Pack_ActionDefinition_Format1(MeasurementInfoList, C.ulong(ActionDefinitionFmt1.granulPeriod), CGI)
 	if ActionDefinition_Format1 == nil {
 		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack ActionDefinition_Format1 due to wrong or invalid input")
 	}
@@ -1102,6 +1144,42 @@ func ParseUeId(ptr unsafe.Pointer) (ueID UEID) {
 	default:
 	}
 	return
+}
+
+func ParsePlmnId(PlmnId string) (ParsedPlmnId []byte, err error) {
+	if len(PlmnId) != 6 {
+		return make([]byte, 0), errors.New("Length of PLMN Id doesn't match")
+	}
+
+	for i := 0; i < len(PlmnId); i += 2 {
+		str := PlmnId[i : i+2] //0~8, 8~16
+		v, err := strconv.ParseUint(str, 16, 8)
+
+		if err != nil {
+			return make([]byte, 0), errors.New("PLMN Id, Failed to convert hex to octet")
+		}
+		ParsedPlmnId = append(ParsedPlmnId, byte(v))
+	}
+	return ParsedPlmnId, nil
+}
+
+func ParseCellId(CellId string) (ParsedCellId []byte, err error) {
+	//Make Sure Length is 36
+	if len(CellId) != 36 {
+		return make([]byte, 0), errors.New("Length of Cell Id doesn't match")
+	}
+	CellId = CellId + "0000"
+
+	for i := 0; i < len(CellId); i += 8 {
+		str := CellId[i : i+8] //0~8, 8~16
+		v, err := strconv.ParseUint(str, 2, 8)
+
+		if err != nil {
+			return make([]byte, 0), errors.New("CellId, Failed to convert bit to octet")
+		}
+		ParsedCellId = append(ParsedCellId, byte(v))
+	}
+	return ParsedCellId, nil
 }
 
 func ByteSlice2Int64(BS []byte) (I int64) {

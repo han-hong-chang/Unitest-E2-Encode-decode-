@@ -78,20 +78,10 @@ type E2SM_KPM_ActionDefinition_Format1 struct {
 	cellGlobalID *CGI /* OPTIONAL */
 }
 
-type CGI struct{} // Choose one
-type nR_CGI NR_CGI
-type eUTRA_CGI EUTRA_CGI
-
-type NR_CGI struct {
-	pLMNIdentity   OctetString
-	nRCellIdentity NRCellIdentity
-}
-
-type NRCellIdentity BitString
-
-type EUTRA_CGI struct {
-	pLMNIdentity      OctetString
-	eUTRACellIdentity BitString
+type CGI struct {
+	pLMNIdentity string
+	CellIdentity string
+	NodebType    int //1: eNB, 2: gNB
 }
 
 type MatchingCondList []MatchingCondItem

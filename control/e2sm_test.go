@@ -76,9 +76,15 @@ func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
 
 	fmt.Println(fmt.Sprintf("len = %d", len(ActionDefinitionFmt1.measInfoList)))
 
+	CellGlobalId := &CGI{
+		pLMNIdentity: "001F01",
+		CellIdentity: "000100100011010001011100000000000001",
+		NodebType:    2,
+	}
+
 	e2sm := &E2sm{}
 
-	NewBuffer, err := e2sm.ActionDefinitionFormat1Encode(Buffer, ActionDefinitionFmt1)
+	NewBuffer, err := e2sm.ActionDefinitionFormat1Encode(Buffer, ActionDefinitionFmt1, CellGlobalId)
 	if err != nil {
 		t.Error("Failed to Encode ActionDefinition, err = ", err)
 	}
