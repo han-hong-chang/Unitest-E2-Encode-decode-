@@ -93,7 +93,7 @@ MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t *
     return Measurement_Information_List;
 }
 
-CGI_t *Pack_Cell_Global_Id(PLMNIdentity_t pLMNIdentity, NRCellIdentity_t *nRCellIdentity, EUTRACellIdentity_t *eUTRACellIdentity){
+CGI_t *Pack_Cell_Global_Id(PLMNIdentity_t *pLMNIdentity, NRCellIdentity_t *nRCellIdentity, EUTRACellIdentity_t *eUTRACellIdentity){
     CGI_t *CGI = (CGI_t*)malloc(sizeof(CGI_t));
     assert(CGI != 0);
 
@@ -103,14 +103,19 @@ CGI_t *Pack_Cell_Global_Id(PLMNIdentity_t pLMNIdentity, NRCellIdentity_t *nRCell
         assert(NR_CGI != 0);
 
         NR_CGI->nRCellIdentity = *nRCellIdentity;
-        NR_CGI->pLMNIdentity = pLMNIdentity;
+        NR_CGI->pLMNIdentity = *pLMNIdentity;
+
+        CGI->choice.nR_CGI = NR_CGI;
+
     } else if (eUTRACellIdentity != NULL){
         CGI->present = CGI_PR_eUTRA_CGI;
         EUTRA_CGI_t *EUTRA_CGI = (EUTRA_CGI_t*)malloc(sizeof(EUTRA_CGI_t));
         assert(EUTRA_CGI != 0);
 
         EUTRA_CGI->eUTRACellIdentity = *eUTRACellIdentity;
-        EUTRA_CGI->pLMNIdentity = pLMNIdentity;
+        EUTRA_CGI->pLMNIdentity = *pLMNIdentity;
+
+        CGI->choice.eUTRA_CGI = EUTRA_CGI;
     } else {
         fprintf(stderr, "nRCellIdentity and eUTRACellIdentity are NULL \n");
         return NULL;
@@ -124,7 +129,7 @@ E2SM_KPM_ActionDefinition_Format1_t *Pack_ActionDefinition_Format1(MeasurementIn
 
     Format1->measInfoList = *measInfoList;
     Format1->granulPeriod = granulPeriod;
-    if(!cellGlobalID){
+    if(cellGlobalID != NULL){
         Format1->cellGlobalID = cellGlobalID;
     }
     return Format1;
@@ -230,7 +235,6 @@ MeasurementCondItem_t *Pack_Measurement_Condition_Item(MeasurementTypeName_t *me
     Measurement_Condition_Item->matchingCond = *Matching_Condition_List;
     return Measurement_Condition_Item;
 }
-
 
 MeasurementCondList_t *Pack_Measurement_Condition_List(MeasurementCondItem_t *Measurement_Condition_Item, size_t Count){
     MeasurementCondList_t *Measurement_Condition_List = (MeasurementCondList_t*)malloc(sizeof(MeasurementCondList_t));
