@@ -211,3 +211,35 @@ func GenerateSubscriptionRequestPayload(RanName string, RanFunId int64, RanFunDe
 	}
 	return SubscriptionRerquestParams, nil
 }
+
+func SubscriptionResponseCallback(SubscriptionResponse *apimodel.SubscriptionResponse) {
+	xapp.Logger.Debug("Received SubscriptionResponseCallback")
+	if SubscriptionResponse == nil {
+		xapp.Logger.Error("nil SubscriptionResponse")
+		return
+	}
+
+	xapp.Logger.Debug("Received Subscription Id = %s, %d Subscription Instances in Total", SubscriptionResponse.SubscriptionID, len(SubscriptionResponse.SubscriptionInstances))
+
+	for i := 0; i < len(SubscriptionResponse.SubscriptionInstances); i++ {
+		SubIns := SubscriptionResponse.SubscriptionInstances[i]
+		if SubIns.ErrorCause != "" {
+			xapp.Logger.Error("Subscription[%d]: Error Source: %s, Timeout Type: %s", i, SubIns.ErrorSource, SubIns.TimeoutType)
+
+			//Unsubscribe Subscription
+			if SubscriptionResponse.SubscriptionID != nil {
+				xapp.Subscription.Unsubscribe(*SubscriptionResponse.SubscriptionID)
+			}
+
+			return
+
+		} else {
+			xapp.Logger.Debug("Subscription[%d]: E2EventInstanceID = %d, XappEventInstanceID = %d", i, SubIns.E2EventInstanceID, SubIns.XappEventInstanceID)
+
+			//Todo: Verify Subscription
+
+		}
+
+	}
+
+}

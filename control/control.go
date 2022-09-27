@@ -98,6 +98,9 @@ func (c *Control) xAppStartCB(d interface{}) {
 	//After rigistration complete, start to initiate the other functions.
 	xapp.Logger.Info("xApp ready call back received")
 
+	//Register REST Subscription Call Back
+	xapp.Subscription.SetResponseCB(SubscriptionResponseCallback)
+
 	//Initiate E2IfState
 	c.e2IfState.Init(c)
 }
