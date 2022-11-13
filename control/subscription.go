@@ -66,30 +66,51 @@ func ParsemeasInfoList(measInfoActionList []MeasurementInfo_Action_Item) (measIn
 }
 
 func ParseCQI(RanName string) (CellGlobalId *CGI) {
-	nodebInfor, err := xapp.Rnib.GetNodeb(RanName)
-	if err != nil {
-		xapp.Logger.Error("Failed to get NodebInfor for %s, error: %v", RanName, err)
+	/** Just Skip because RIC platform hasn't supported the feature **/
+	/*
+		nodebInfor, err := xapp.Rnib.GetNodeb(RanName)
+		if err != nil {
+			xapp.Logger.Error("Failed to get NodebInfor for %s, error: %v", RanName, err)
+		}
+
+		//Check gNB, NodeBType = 2 means gNB
+		if nodebInfor.NodeType == 2 {
+			NrCellList := nodebInfor.GetGnb().GetServedNrCells()
+			if len(NrCellList) == 0 {
+				xapp.Logger.Debug("NrCellList is empty")
+				return nil
+			}
+			NrCellInfor := NrCellList[0].GetServedNrCellInformation()
+
+			xapp.Logger.Debug("NrCellInfor is %v", NrCellInfor)
+			pLMNIdentitys := NrCellInfor.GetServedPlmns()
+			if len(pLMNIdentitys) == 0 {
+				xapp.Logger.Debug("pLMNIdentitys is empty")
+				return nil
+			}
+
+			CellGlobalId.pLMNIdentity = pLMNIdentitys[0]
+			CellGlobalId.CellIdentity = NrCellInfor.GetCellId()
+			CellGlobalId.NodebType = 2
+
+			return CellGlobalId
+		} else {
+			xapp.Logger.Debug("KPM xApp doesn't support eNB %s", nodebInfor.RanName)
+			return nil
+
+		}
+	*/
+
+	/* Here just hard core */
+	CellGlobalId = &CGI{
+		pLMNIdentity: "001F01",
+		CellIdentity: "000100100011010001010110000000000001",
+		NodebType:    2,
 	}
-	xapp.Logger.Debug("nodebInfor is %v", nodebInfor)
 
-	//Check gNB, NodeBType = 2 means gNB
-	if nodebInfor.NodeType == 2 {
-		NrCellList := nodebInfor.GetGnb().GetServedNrCells()
-		NrCellInfor := NrCellList[0].GetServedNrCellInformation()
-
-		xapp.Logger.Debug("NrCellInfor is %v", NrCellInfor)
-
-		CellGlobalId.pLMNIdentity = NrCellInfor.GetServedPlmns()[0]
-		CellGlobalId.CellIdentity = NrCellInfor.GetCellId()
-		CellGlobalId.NodebType = 2
-
-		return CellGlobalId
-	} else {
-		xapp.Logger.Debug("KPM xApp doesn't support eNB %s", nodebInfor.RanName)
-		return nil
-
-	}
+	return CellGlobalId
 }
+
 func GenerateActionDefinitionFormat1(RanName string, ReportStyleItem RIC_ReportStyle_Item) (ActionDefinition []byte, err error) {
 	// If the coded length is too long, it needs to enlarge the buffer
 	Buffer := make([]byte, 5000)
@@ -219,7 +240,7 @@ func SubscriptionResponseCallback(SubscriptionResponse *apimodel.SubscriptionRes
 		return
 	}
 
-	xapp.Logger.Debug("Received Subscription Id = %s, %d Subscription Instances in Total", SubscriptionResponse.SubscriptionID, len(SubscriptionResponse.SubscriptionInstances))
+	xapp.Logger.Debug("Received Subscription Id = %s, %d Subscription Instances in Total", *SubscriptionResponse.SubscriptionID, len(SubscriptionResponse.SubscriptionInstances))
 
 	for i := 0; i < len(SubscriptionResponse.SubscriptionInstances); i++ {
 		SubIns := SubscriptionResponse.SubscriptionInstances[i]
