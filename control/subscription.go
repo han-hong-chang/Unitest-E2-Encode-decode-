@@ -244,7 +244,8 @@ func SubscriptionResponseCallback(SubscriptionResponse *apimodel.SubscriptionRes
 
 	for i := 0; i < len(SubscriptionResponse.SubscriptionInstances); i++ {
 		SubIns := SubscriptionResponse.SubscriptionInstances[i]
-		if SubIns.ErrorCause != "" {
+		// Due to ErrorCause of submgr is different to the definition. Here, I just add another check.
+		if SubIns.ErrorCause != "" && SubIns.ErrorCause != " " {
 			xapp.Logger.Error("Subscription[%d]: Error Source: %s, Timeout Type: %s", i, SubIns.ErrorSource, SubIns.TimeoutType)
 
 			//Unsubscribe Subscription
