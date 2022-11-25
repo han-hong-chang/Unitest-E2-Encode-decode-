@@ -4,14 +4,18 @@
 #include <asn_application.h>
 #include "constr_TYPE.h"
 #include "E2SM-KPM-ActionDefinition-Format1.h"
+#include "E2SM-KPM-IndicationHeader-Format1.h"
 #include "wrapper.h"
 
 void VerifyRANFunctionDefinitionDecoding();
 void VerifyEventTriggerDefinitionEncoding();
 void VerifyActionDefinitionEncoding();
+void VerifyIndicationHeaderDecoding();
+void VerifyIndicationHeaderEncoding();
 
 int main(){
-    VerifyActionDefinitionEncoding();
+    VerifyIndicationHeaderEncoding();
+    //VerifyActionDefinitionEncoding();
     return 0;
 }
 
@@ -251,4 +255,78 @@ void VerifyActionDefinitionEncoding(){
         ASN_STRUCT_FREE(asn_DEF_E2SM_KPM_ActionDefinition, ActionFormat3_Decode);
         exit(1) ;
     } 
+}
+
+void VerifyIndicationHeaderDecoding(){
+    uint8_t Payload[] = {14, 231, 27, 163, 51, 0, 0, 6, 68, 85, 32, 49, 58, 49, 16, 68, 85, 28, 86, 105, 97, 118, 105, 32, 82, 73, 67, 32, 84, 101, 115, 116} ;
+    
+    E2SM_KPM_IndicationHeader_t *IndicationHeader = 0;
+    IndicationHeader = Decode_Indication_Header(Payload, sizeof(Payload));
+
+    if(IndicationHeader == NULL){
+        fprintf(stderr, "Failed to decode E2SM-KPM IndicationHeader\n");
+    }
+}
+
+void VerifyIndicationHeaderEncoding(){
+    uint8_t time[] = {231, 27, 162, 171};
+    TimeStamp_t	 colletStartTime;
+    colletStartTime.buf = time;
+    colletStartTime.size = 4;
+
+    uint8_t SenderName[] = {"DU 1:1"};
+    PrintableString_t senderName;
+    senderName.buf = SenderName;
+    senderName.size = 7;
+
+    uint8_t SenderType[] = {"DU"};
+    PrintableString_t senderType;
+    senderType.buf = SenderType;
+    senderType.size = 3;
+
+    uint8_t VendorName[] = {"Viavi RIC Test"};
+    PrintableString_t vendorName;
+    vendorName.buf = VendorName;
+    vendorName.size = 15;
+
+    E2SM_KPM_IndicationHeader_Format1_t* IndicationHeader_Format1 = (E2SM_KPM_IndicationHeader_Format1_t*)malloc(sizeof(E2SM_KPM_IndicationHeader_Format1_t));
+
+    IndicationHeader_Format1->colletStartTime = colletStartTime;
+    IndicationHeader_Format1->senderName = &senderName;
+    IndicationHeader_Format1->senderType = &senderType;
+    IndicationHeader_Format1->vendorName = &vendorName;
+
+    E2SM_KPM_IndicationHeader_t* IndicationHeader = (E2SM_KPM_IndicationHeader_t*)malloc(sizeof(E2SM_KPM_IndicationHeader_t)) ;
+    IndicationHeader->indicationHeader_formats.present = E2SM_KPM_IndicationHeader__indicationHeader_formats_PR_indicationHeader_Format1;
+    IndicationHeader->indicationHeader_formats.choice.indicationHeader_Format1 = IndicationHeader_Format1;
+
+    uint8_t Buffer[1500];
+    size_t Buf_Size = 1500;
+    ssize_t Coded_Size;
+
+    Coded_Size = Encode_Indication_Header(Buffer, Buf_Size, IndicationHeader) ;
+
+    if(Coded_Size < 0){
+        fprintf(stderr, "Failed to Encode E2SM-KPM IndicationHeader\n");
+    }else{
+        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_IndicationHeader, IndicationHeader);
+        printf("After encoding, length of bit = %ld\n",Coded_Size);
+        
+         //Due to unit of length is bit => We need to divide by 8 into byte
+        for(int i =0; i<Coded_Size/8;i++){
+            printf("%d ",Buffer[i]);
+        }
+    }
+    //After encoding, Total 280 bits. 280/8 = 35bytes.
+    uint8_t* Payload = (uint8_t*)malloc((Coded_Size)*sizeof(uint8_t));
+
+    printf("sizeof Payload = %ld\n", sizeof(Payload));
+    memcpy(Payload, Buffer, Coded_Size) ;
+
+    E2SM_KPM_IndicationHeader_t *IndicationHeader_2 = 0;
+    IndicationHeader_2 = Decode_Indication_Header(Payload, Coded_Size);
+
+    if(IndicationHeader_2 == NULL){
+        fprintf(stderr, "Failed to decode E2SM-KPM IndicationHeader\n");
+    }
 }

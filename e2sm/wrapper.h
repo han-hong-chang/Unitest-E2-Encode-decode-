@@ -39,6 +39,8 @@ void Free_Indication_Header(E2SM_KPM_IndicationHeader_t *Indication_Header);
 E2SM_KPM_IndicationMessage_t *Decode_Indication_Message(void *Buffer, size_t Buf_Size);
 void Free_Indication_Message(E2SM_KPM_IndicationMessage_t *Indication_Message);
 
+ssize_t Encode_Indication_Header(void *Buffer, size_t Buf_Size, E2SM_KPM_IndicationHeader_t* IndicationHeader);
+
 #ifdef __cplusplus
 }
 #endif

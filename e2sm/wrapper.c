@@ -401,3 +401,15 @@ E2SM_KPM_IndicationMessage_t *Decode_Indication_Message(void *Buffer, size_t Buf
 void Free_Indication_Message(E2SM_KPM_IndicationMessage_t *Indication_Message){
     ASN_STRUCT_FREE(asn_DEF_E2SM_KPM_IndicationMessage, Indication_Message);
 }
+
+ssize_t Encode_Indication_Header(void *Buffer, size_t Buf_Size, E2SM_KPM_IndicationHeader_t* IndicationHeader){
+    asn_enc_rval_t Result;
+    Result = aper_encode_to_buffer(&asn_DEF_E2SM_KPM_IndicationHeader, NULL, IndicationHeader, Buffer, Buf_Size);
+
+    if(Result.encoded == -1) {
+        fprintf(stderr, "Can't encode %s: %s\n", Result.failed_type->name, strerror(errno));
+        return -1;
+    } else {
+	    return Result.encoded;
+	}
+}
