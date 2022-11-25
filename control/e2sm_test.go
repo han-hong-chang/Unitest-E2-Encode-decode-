@@ -90,3 +90,27 @@ func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
 	}
 	fmt.Println(fmt.Sprintf("%x", NewBuffer))
 }
+
+func TestE2smIndicationHeaderDecoding(t *testing.T) {
+	Payload := []byte{14, 231, 27, 163, 51, 0, 0, 6, 68, 85, 32, 49, 58, 49, 16, 68, 85, 28, 86, 105, 97, 118, 105, 32, 82, 73, 67, 32, 84, 101, 115, 116}
+	e2sm := &E2sm{}
+
+	fmt.Println("Length of payload = ", len(Payload))
+
+	NewBuffer, err := e2sm.IndicationHeaderDecode(Payload)
+	if err != nil {
+		t.Error("Failed to Decode IndicationHeader, err = ", err)
+	}
+	fmt.Println(fmt.Sprintf("%x", NewBuffer))
+}
+
+func TestE2smIndicationMessageDecoding(t *testing.T) {
+	Payload := []byte{4, 0, 0, 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	e2sm := &E2sm{}
+
+	NewBuffer, err := e2sm.IndicationMessageDecode(Payload)
+	if err != nil {
+		t.Error("Failed to Decode IndicationHeader, err = ", err)
+	}
+	fmt.Println(fmt.Sprintf("%x", NewBuffer))
+}
