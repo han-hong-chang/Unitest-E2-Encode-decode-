@@ -27,6 +27,8 @@ func (c *Control) HandleIndication(msg *xapp.RMRParams) (err error) {
 	// Check gNB Exist
 
 	// Using E2AP to decode RIC Indication
+	xapp.Logger.Debug("RIC Indication Payload: %x", msg.Payload)
+
 	e2ap := &E2ap{}
 	Indication, err := e2ap.RICIndicationDecode(msg.Payload)
 	if err != nil {
@@ -35,7 +37,8 @@ func (c *Control) HandleIndication(msg *xapp.RMRParams) (err error) {
 	}
 
 	xapp.Logger.Debug("Successfully decode RIC Indication sent by gNB: %s", msg.Meid.RanName)
-
+	xapp.Logger.Debug("Got RIC Indication Header Payload: %x", Indication.IndicationHeader)
+	xapp.Logger.Debug("Got RIC Indication Message Payload: %x", Indication.IndicationMessage)
 	// Check Action Type
 
 	// Using E2SM-KPM to decode RIC Indication Header
