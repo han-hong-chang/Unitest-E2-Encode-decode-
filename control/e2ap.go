@@ -9,6 +9,7 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 )
 
@@ -16,6 +17,8 @@ type E2ap struct {
 }
 
 func (e *E2ap) RICIndicationDecode(Payload []byte) (Indication *RICIndication, err error) {
+	fmt.Println("RICIndication Payload =", Payload)
+
 	cptr := unsafe.Pointer(&Payload[0])
 	Indication = &RICIndication{}
 
