@@ -115,14 +115,13 @@ type E2SM_KPM_IndicationHeader struct { //Choose One
 	indicationHeader_FormatType int32
 	indicationHeader_Format     interface{}
 }
-type indicationHeader_Format1 E2SM_KPM_IndicationHeader_Format1
 
 type E2SM_KPM_IndicationHeader_Format1 struct {
 	colletStartTime   OctetString
-	fileFormatversion *PrintableString /* OPTIONAL */
-	senderName        *PrintableString /* OPTIONAL */
-	senderType        *PrintableString /* OPTIONAL */
-	vendorName        *PrintableString /* OPTIONAL */
+	fileFormatversion *string /* OPTIONAL */
+	senderName        *string /* OPTIONAL */
+	senderType        *string /* OPTIONAL */
+	vendorName        *string /* OPTIONAL */
 }
 
 type E2SM_KPM_IndicationMessage struct { //Choose One
@@ -140,11 +139,9 @@ type E2SM_KPM_IndicationMessage_Format1 struct {
 }
 
 type MeasurementDataItem struct {
-	measRecord     MeasurementRecord
+	measRecord     []MeasurementRecordItem
 	incompleteFlag *int64 /* OPTIONAL */
 }
-
-type MeasurementRecord []MeasurementRecordItem
 
 type MeasurementRecordItem interface{} //Choose One
 type integer uint64

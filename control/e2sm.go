@@ -278,38 +278,22 @@ func (e *E2sm) IndicationHeaderDecode(Buffer []byte) (IndiHdr *E2SM_KPM_Indicati
 		IndiHdr1.colletStartTime.Size = int(E2SM_KPM_IndicationHeader_Format1_C.colletStartTime.size)
 
 		if E2SM_KPM_IndicationHeader_Format1_C.fileFormatversion != nil {
-			fileFormatversion := PrintableString{}
-
-			fileFormatversion.Buf = C.GoBytes(unsafe.Pointer(E2SM_KPM_IndicationHeader_Format1_C.fileFormatversion.buf), C.int(E2SM_KPM_IndicationHeader_Format1_C.fileFormatversion.size))
-			fileFormatversion.Size = int(E2SM_KPM_IndicationHeader_Format1_C.fileFormatversion.size)
-
+			fileFormatversion := string(C.GoBytes(unsafe.Pointer(E2SM_KPM_IndicationHeader_Format1_C.fileFormatversion.buf), C.int(E2SM_KPM_IndicationHeader_Format1_C.fileFormatversion.size)))
 			IndiHdr1.fileFormatversion = &fileFormatversion
 		}
 
 		if E2SM_KPM_IndicationHeader_Format1_C.senderName != nil {
-			senderName := PrintableString{}
-
-			senderName.Buf = C.GoBytes(unsafe.Pointer(E2SM_KPM_IndicationHeader_Format1_C.senderName.buf), C.int(E2SM_KPM_IndicationHeader_Format1_C.senderName.size))
-			senderName.Size = int(E2SM_KPM_IndicationHeader_Format1_C.senderName.size)
-
+			senderName := string(C.GoBytes(unsafe.Pointer(E2SM_KPM_IndicationHeader_Format1_C.senderName.buf), C.int(E2SM_KPM_IndicationHeader_Format1_C.senderName.size)))
 			IndiHdr1.senderName = &senderName
 		}
 
 		if E2SM_KPM_IndicationHeader_Format1_C.senderType != nil {
-			senderType := PrintableString{}
-
-			senderType.Buf = C.GoBytes(unsafe.Pointer(E2SM_KPM_IndicationHeader_Format1_C.senderType.buf), C.int(E2SM_KPM_IndicationHeader_Format1_C.senderType.size))
-			senderType.Size = int(E2SM_KPM_IndicationHeader_Format1_C.senderType.size)
-
+			senderType := string(C.GoBytes(unsafe.Pointer(E2SM_KPM_IndicationHeader_Format1_C.senderType.buf), C.int(E2SM_KPM_IndicationHeader_Format1_C.senderType.size)))
 			IndiHdr1.senderType = &senderType
 		}
 
 		if E2SM_KPM_IndicationHeader_Format1_C.vendorName != nil {
-			vendorName := PrintableString{}
-
-			vendorName.Buf = C.GoBytes(unsafe.Pointer(E2SM_KPM_IndicationHeader_Format1_C.vendorName.buf), C.int(E2SM_KPM_IndicationHeader_Format1_C.vendorName.size))
-			vendorName.Size = int(E2SM_KPM_IndicationHeader_Format1_C.vendorName.size)
-
+			vendorName := string(C.GoBytes(unsafe.Pointer(E2SM_KPM_IndicationHeader_Format1_C.vendorName.buf), C.int(E2SM_KPM_IndicationHeader_Format1_C.vendorName.size)))
 			IndiHdr1.vendorName = &vendorName
 		}
 
@@ -382,160 +366,163 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 		}
 
 		// Handle MeasurementInfoList *Optional*
-		measInfoList := []MeasurementInfoItem{}
-		measInfoItem := MeasurementInfoItem{}
+		if E2SM_KPM_IndicationMessage_Format1_C.measInfoList != nil {
 
-		for i := 0; i < int(E2SM_KPM_IndicationMessage_Format1_C.measInfoList.list.count); i++ {
-			var sizeof_MeasurementInfoItem_t *C.MeasurementInfoItem_t
-			MeasurementInfoItem_C := *(**C.MeasurementInfoItem_t)(unsafe.Pointer(uintptr(unsafe.Pointer(E2SM_KPM_IndicationMessage_Format1_C.measInfoList.list.array)) + (uintptr)(i)*unsafe.Sizeof(sizeof_MeasurementInfoItem_t)))
+			measInfoList := []MeasurementInfoItem{}
+			measInfoItem := MeasurementInfoItem{}
 
-			measType := int32(MeasurementInfoItem_C.measType.present)
-			switch measType {
-			case 1:
-				measName := PrintableString{}
+			for i := 0; i < int(E2SM_KPM_IndicationMessage_Format1_C.measInfoList.list.count); i++ {
+				var sizeof_MeasurementInfoItem_t *C.MeasurementInfoItem_t
+				MeasurementInfoItem_C := *(**C.MeasurementInfoItem_t)(unsafe.Pointer(uintptr(unsafe.Pointer(E2SM_KPM_IndicationMessage_Format1_C.measInfoList.list.array)) + (uintptr)(i)*unsafe.Sizeof(sizeof_MeasurementInfoItem_t)))
 
-				measName_C := (*C.MeasurementTypeName_t)(unsafe.Pointer(&MeasurementInfoItem_C.measType.choice[0]))
+				measType := int32(MeasurementInfoItem_C.measType.present)
+				switch measType {
+				case 1:
+					measName := PrintableString{}
 
-				measName.Buf = C.GoBytes(unsafe.Pointer(measName_C.buf), C.int(measName_C.size))
-				measName.Size = int(measName_C.size)
+					measName_C := (*C.MeasurementTypeName_t)(unsafe.Pointer(&MeasurementInfoItem_C.measType.choice[0]))
 
-				measInfoItem.measType = measName
-			case 2:
-				measID := int64(MeasurementInfoItem_C.measType.choice[0])
+					measName.Buf = C.GoBytes(unsafe.Pointer(measName_C.buf), C.int(measName_C.size))
+					measName.Size = int(measName_C.size)
 
-				measInfoItem.measType = measID
-			default:
-			}
+					measInfoItem.measType = measName
+				case 2:
+					measID := int64(MeasurementInfoItem_C.measType.choice[0])
 
-			measInfoItem.labelInfoList = []LabelInfoItem{}
-			LabelInfoItem := LabelInfoItem{}
-
-			for j := 0; j < int(MeasurementInfoItem_C.labelInfoList.list.count); j++ {
-				var sizeof_LabelInfoItem_t *C.LabelInfoItem_t
-				LabelInfoItem_C := *(**C.LabelInfoItem_t)(unsafe.Pointer(uintptr(unsafe.Pointer(MeasurementInfoItem_C.labelInfoList.list.array)) + (uintptr)(j)*unsafe.Sizeof(sizeof_LabelInfoItem_t)))
-
-				if LabelInfoItem_C.measLabel.noLabel != nil {
-					noLabel := int64(*LabelInfoItem_C.measLabel.noLabel)
-					LabelInfoItem.noLabel = &noLabel
+					measInfoItem.measType = measID
+				default:
 				}
 
-				if LabelInfoItem_C.measLabel.plmnID != nil {
-					plmnID := OctetString{}
+				measInfoItem.labelInfoList = []LabelInfoItem{}
+				LabelInfoItem := LabelInfoItem{}
 
-					plmnID.Buf = C.GoBytes(unsafe.Pointer(LabelInfoItem_C.measLabel.plmnID.buf), C.int(LabelInfoItem_C.measLabel.plmnID.size))
-					plmnID.Size = int(LabelInfoItem_C.measLabel.plmnID.size)
+				for j := 0; j < int(MeasurementInfoItem_C.labelInfoList.list.count); j++ {
+					var sizeof_LabelInfoItem_t *C.LabelInfoItem_t
+					LabelInfoItem_C := *(**C.LabelInfoItem_t)(unsafe.Pointer(uintptr(unsafe.Pointer(MeasurementInfoItem_C.labelInfoList.list.array)) + (uintptr)(j)*unsafe.Sizeof(sizeof_LabelInfoItem_t)))
 
-					LabelInfoItem.plmnID = &plmnID
-				}
-
-				if LabelInfoItem_C.measLabel.sliceID != nil {
-					LabelInfoItem.sliceID.sST.Buf = C.GoBytes(unsafe.Pointer(LabelInfoItem_C.measLabel.sliceID.sST.buf), C.int(LabelInfoItem_C.measLabel.sliceID.sST.size))
-					LabelInfoItem.sliceID.sST.Size = int(LabelInfoItem_C.measLabel.sliceID.sST.size)
-
-					if LabelInfoItem_C.measLabel.sliceID.sD != nil {
-						sD := OctetString{}
-
-						sD.Buf = C.GoBytes(unsafe.Pointer(LabelInfoItem_C.measLabel.sliceID.sD.buf), C.int(LabelInfoItem_C.measLabel.sliceID.sD.size))
-						sD.Size = int(LabelInfoItem_C.measLabel.sliceID.sD.size)
-
-						LabelInfoItem.sliceID.sD = &sD
+					if LabelInfoItem_C.measLabel.noLabel != nil {
+						noLabel := int64(*LabelInfoItem_C.measLabel.noLabel)
+						LabelInfoItem.noLabel = &noLabel
 					}
-				}
 
-				if LabelInfoItem_C.measLabel.fiveQI != nil {
-					fiveQI := int64(*LabelInfoItem_C.measLabel.fiveQI)
-					LabelInfoItem.fiveQI = &fiveQI
-				}
+					if LabelInfoItem_C.measLabel.plmnID != nil {
+						plmnID := OctetString{}
 
-				if LabelInfoItem_C.measLabel.qFI != nil {
-					qFI := int64(*LabelInfoItem_C.measLabel.qFI)
-					LabelInfoItem.qFI = &qFI
-				}
+						plmnID.Buf = C.GoBytes(unsafe.Pointer(LabelInfoItem_C.measLabel.plmnID.buf), C.int(LabelInfoItem_C.measLabel.plmnID.size))
+						plmnID.Size = int(LabelInfoItem_C.measLabel.plmnID.size)
 
-				if LabelInfoItem_C.measLabel.qCI != nil {
-					qCI := int64(*LabelInfoItem_C.measLabel.qCI)
-					LabelInfoItem.qCI = &qCI
-				}
+						LabelInfoItem.plmnID = &plmnID
+					}
 
-				if LabelInfoItem_C.measLabel.qCImax != nil {
-					qCImax := int64(*LabelInfoItem_C.measLabel.qCImax)
-					LabelInfoItem.qCImax = &qCImax
-				}
+					if LabelInfoItem_C.measLabel.sliceID != nil {
+						LabelInfoItem.sliceID.sST.Buf = C.GoBytes(unsafe.Pointer(LabelInfoItem_C.measLabel.sliceID.sST.buf), C.int(LabelInfoItem_C.measLabel.sliceID.sST.size))
+						LabelInfoItem.sliceID.sST.Size = int(LabelInfoItem_C.measLabel.sliceID.sST.size)
 
-				if LabelInfoItem_C.measLabel.qCImin != nil {
-					qCImin := int64(*LabelInfoItem_C.measLabel.qCImin)
-					LabelInfoItem.noLabel = &qCImin
-				}
+						if LabelInfoItem_C.measLabel.sliceID.sD != nil {
+							sD := OctetString{}
 
-				if LabelInfoItem_C.measLabel.aRPmax != nil {
-					aRPmax := int64(*LabelInfoItem_C.measLabel.aRPmax)
-					LabelInfoItem.noLabel = &aRPmax
-				}
+							sD.Buf = C.GoBytes(unsafe.Pointer(LabelInfoItem_C.measLabel.sliceID.sD.buf), C.int(LabelInfoItem_C.measLabel.sliceID.sD.size))
+							sD.Size = int(LabelInfoItem_C.measLabel.sliceID.sD.size)
 
-				if LabelInfoItem_C.measLabel.aRPmin != nil {
-					aRPmin := int64(*LabelInfoItem_C.measLabel.aRPmin)
-					LabelInfoItem.noLabel = &aRPmin
-				}
+							LabelInfoItem.sliceID.sD = &sD
+						}
+					}
 
-				if LabelInfoItem_C.measLabel.bitrateRange != nil {
-					bitrateRange := int64(*LabelInfoItem_C.measLabel.bitrateRange)
-					LabelInfoItem.noLabel = &bitrateRange
-				}
+					if LabelInfoItem_C.measLabel.fiveQI != nil {
+						fiveQI := int64(*LabelInfoItem_C.measLabel.fiveQI)
+						LabelInfoItem.fiveQI = &fiveQI
+					}
 
-				if LabelInfoItem_C.measLabel.layerMU_MIMO != nil {
-					layerMU_MIMO := int64(*LabelInfoItem_C.measLabel.layerMU_MIMO)
-					LabelInfoItem.noLabel = &layerMU_MIMO
-				}
+					if LabelInfoItem_C.measLabel.qFI != nil {
+						qFI := int64(*LabelInfoItem_C.measLabel.qFI)
+						LabelInfoItem.qFI = &qFI
+					}
 
-				if LabelInfoItem_C.measLabel.sUM != nil {
-					sUM := int64(*LabelInfoItem_C.measLabel.sUM)
-					LabelInfoItem.noLabel = &sUM
-				}
+					if LabelInfoItem_C.measLabel.qCI != nil {
+						qCI := int64(*LabelInfoItem_C.measLabel.qCI)
+						LabelInfoItem.qCI = &qCI
+					}
 
-				if LabelInfoItem_C.measLabel.distBinX != nil {
-					distBinX := int64(*LabelInfoItem_C.measLabel.distBinX)
-					LabelInfoItem.noLabel = &distBinX
-				}
+					if LabelInfoItem_C.measLabel.qCImax != nil {
+						qCImax := int64(*LabelInfoItem_C.measLabel.qCImax)
+						LabelInfoItem.qCImax = &qCImax
+					}
 
-				if LabelInfoItem_C.measLabel.distBinY != nil {
-					distBinY := int64(*LabelInfoItem_C.measLabel.distBinY)
-					LabelInfoItem.noLabel = &distBinY
-				}
+					if LabelInfoItem_C.measLabel.qCImin != nil {
+						qCImin := int64(*LabelInfoItem_C.measLabel.qCImin)
+						LabelInfoItem.noLabel = &qCImin
+					}
 
-				if LabelInfoItem_C.measLabel.distBinZ != nil {
-					distBinZ := int64(*LabelInfoItem_C.measLabel.distBinZ)
-					LabelInfoItem.noLabel = &distBinZ
-				}
+					if LabelInfoItem_C.measLabel.aRPmax != nil {
+						aRPmax := int64(*LabelInfoItem_C.measLabel.aRPmax)
+						LabelInfoItem.noLabel = &aRPmax
+					}
 
-				if LabelInfoItem_C.measLabel.preLabelOverride != nil {
-					preLabelOverride := int64(*LabelInfoItem_C.measLabel.preLabelOverride)
-					LabelInfoItem.noLabel = &preLabelOverride
-				}
+					if LabelInfoItem_C.measLabel.aRPmin != nil {
+						aRPmin := int64(*LabelInfoItem_C.measLabel.aRPmin)
+						LabelInfoItem.noLabel = &aRPmin
+					}
 
-				if LabelInfoItem_C.measLabel.startEndInd != nil {
-					startEndInd := int64(*LabelInfoItem_C.measLabel.startEndInd)
-					LabelInfoItem.noLabel = &startEndInd
-				}
+					if LabelInfoItem_C.measLabel.bitrateRange != nil {
+						bitrateRange := int64(*LabelInfoItem_C.measLabel.bitrateRange)
+						LabelInfoItem.noLabel = &bitrateRange
+					}
 
-				if LabelInfoItem_C.measLabel.min != nil {
-					min := int64(*LabelInfoItem_C.measLabel.min)
-					LabelInfoItem.noLabel = &min
-				}
+					if LabelInfoItem_C.measLabel.layerMU_MIMO != nil {
+						layerMU_MIMO := int64(*LabelInfoItem_C.measLabel.layerMU_MIMO)
+						LabelInfoItem.noLabel = &layerMU_MIMO
+					}
 
-				if LabelInfoItem_C.measLabel.max != nil {
-					max := int64(*LabelInfoItem_C.measLabel.max)
-					LabelInfoItem.noLabel = &max
-				}
+					if LabelInfoItem_C.measLabel.sUM != nil {
+						sUM := int64(*LabelInfoItem_C.measLabel.sUM)
+						LabelInfoItem.noLabel = &sUM
+					}
 
-				if LabelInfoItem_C.measLabel.avg != nil {
-					avg := int64(*LabelInfoItem_C.measLabel.avg)
-					LabelInfoItem.noLabel = &avg
+					if LabelInfoItem_C.measLabel.distBinX != nil {
+						distBinX := int64(*LabelInfoItem_C.measLabel.distBinX)
+						LabelInfoItem.noLabel = &distBinX
+					}
+
+					if LabelInfoItem_C.measLabel.distBinY != nil {
+						distBinY := int64(*LabelInfoItem_C.measLabel.distBinY)
+						LabelInfoItem.noLabel = &distBinY
+					}
+
+					if LabelInfoItem_C.measLabel.distBinZ != nil {
+						distBinZ := int64(*LabelInfoItem_C.measLabel.distBinZ)
+						LabelInfoItem.noLabel = &distBinZ
+					}
+
+					if LabelInfoItem_C.measLabel.preLabelOverride != nil {
+						preLabelOverride := int64(*LabelInfoItem_C.measLabel.preLabelOverride)
+						LabelInfoItem.noLabel = &preLabelOverride
+					}
+
+					if LabelInfoItem_C.measLabel.startEndInd != nil {
+						startEndInd := int64(*LabelInfoItem_C.measLabel.startEndInd)
+						LabelInfoItem.noLabel = &startEndInd
+					}
+
+					if LabelInfoItem_C.measLabel.min != nil {
+						min := int64(*LabelInfoItem_C.measLabel.min)
+						LabelInfoItem.noLabel = &min
+					}
+
+					if LabelInfoItem_C.measLabel.max != nil {
+						max := int64(*LabelInfoItem_C.measLabel.max)
+						LabelInfoItem.noLabel = &max
+					}
+
+					if LabelInfoItem_C.measLabel.avg != nil {
+						avg := int64(*LabelInfoItem_C.measLabel.avg)
+						LabelInfoItem.noLabel = &avg
+					}
+					measInfoItem.labelInfoList = append(measInfoItem.labelInfoList, LabelInfoItem)
 				}
-				measInfoItem.labelInfoList = append(measInfoItem.labelInfoList, LabelInfoItem)
+				measInfoList = append(measInfoList, measInfoItem)
 			}
-			measInfoList = append(measInfoList, measInfoItem)
+			IndiMsgFmt1.measInfoList = &measInfoList
 		}
-		IndiMsgFmt1.measInfoList = &measInfoList
 
 		// Handle GranularityPeriod *Optional*
 		if E2SM_KPM_IndicationMessage_Format1_C.granulPeriod != nil {
