@@ -115,11 +115,12 @@ func TestE2smIndicationHeaderDecoding(t *testing.T) {
 }
 
 func TestE2smIndicationMessageDecoding(t *testing.T) {
-	Payload := []byte{4, 0, 0, 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	fmt.Println("==== E2SM-KPM Indication Message Format1 =====")
+	IndicationMessageFormat1Payload := []byte{4, 0, 0, 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	e2sm := &E2sm{}
 
 	fmt.Println("==== ASN.1 Codec =====")
-	IndicationMessage, err := e2sm.IndicationMessageDecode(Payload)
+	IndicationMessage, err := e2sm.IndicationMessageDecode(IndicationMessageFormat1Payload)
 	if err != nil {
 		t.Error("Failed to Decode IndicationMessage, err = ", err)
 	} else {
