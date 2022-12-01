@@ -97,20 +97,45 @@ func TestE2smIndicationHeaderDecoding(t *testing.T) {
 
 	fmt.Println("Length of payload = ", len(Payload))
 
-	NewBuffer, err := e2sm.IndicationHeaderDecode(Payload)
+	fmt.Println("==== ASN.1 Codec =====")
+	IndicationHeader, err := e2sm.IndicationHeaderDecode(Payload)
 	if err != nil {
 		t.Error("Failed to Decode IndicationHeader, err = ", err)
+	} else {
+		fmt.Println("==== Golang Deocode =====")
+		switch IndicationHeader.indicationHeader_Format.(type) {
+		case *E2SM_KPM_IndicationHeader_Format1:
+			fmt.Println("colletStartTime = ", IndicationHeader.indicationHeader_Format.(*E2SM_KPM_IndicationHeader_Format1).colletStartTime.Buf)
+			fmt.Println("senderName = ", *IndicationHeader.indicationHeader_Format.(*E2SM_KPM_IndicationHeader_Format1).senderName)
+			fmt.Println("senderType = ", *IndicationHeader.indicationHeader_Format.(*E2SM_KPM_IndicationHeader_Format1).senderType)
+			fmt.Println("vendorName = ", *IndicationHeader.indicationHeader_Format.(*E2SM_KPM_IndicationHeader_Format1).vendorName)
+		}
 	}
-	fmt.Println(fmt.Sprintf("%x", NewBuffer))
+
 }
 
 func TestE2smIndicationMessageDecoding(t *testing.T) {
 	Payload := []byte{4, 0, 0, 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	e2sm := &E2sm{}
 
-	NewBuffer, err := e2sm.IndicationMessageDecode(Payload)
+	fmt.Println("==== ASN.1 Codec =====")
+	IndicationMessage, err := e2sm.IndicationMessageDecode(Payload)
 	if err != nil {
-		t.Error("Failed to Decode IndicationHeader, err = ", err)
+		t.Error("Failed to Decode IndicationMessage, err = ", err)
+	} else {
+		fmt.Println("==== Golang Deocode =====")
+		switch IndicationMessage.indicationMessage_Formats.(type) {
+		case *E2SM_KPM_IndicationMessage_Format1:
+			measDataList := IndicationMessage.indicationMessage_Formats.(*E2SM_KPM_IndicationMessage_Format1).measData
+			for i := 0; i < len(measDataList); i++ {
+				measRecordList := measDataList[i].measRecord
+				fmt.Printf("len(measRecordList): %v\n", len(measRecordList))
+
+				for j := 0; j < len(measRecordList); j++ {
+					fmt.Printf("measDataList[%d], measRecordList[%d]: %v\n", i, j, measRecordList[j])
+				}
+			}
+		}
 	}
-	fmt.Println(fmt.Sprintf("%x", NewBuffer))
+
 }
