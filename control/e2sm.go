@@ -13,8 +13,10 @@ import (
 	"unsafe"
 )
 
-//E2SM-KPMv2 OID
-const E2smKPMv2OId string = "1.3.6.1.4.1.53148.1.2.2.2"
+const (
+	E2smKPMv2OId string = "1.3.6.1.4.1.53148.1.2.2.2" //E2SM-KPMv2 OID
+	ASNPrintFlag int    = 0
+)
 
 type E2sm struct {
 }
@@ -26,7 +28,7 @@ func (e *E2sm) RanFunctionDefinitionDecode(str string) (RanFuncDef *E2SM_KPM_RAN
 	RanFuncDef = &E2SM_KPM_RANfunction_Description{}
 
 	// Call E2SM Wrapper to decode
-	DecodedRanFuncDef := C.Decode_RAN_Function_Description(cptr, C.size_t(len(Buffer)), C.int(0))
+	DecodedRanFuncDef := C.Decode_RAN_Function_Description(cptr, C.size_t(len(Buffer)), C.int(ASNPrintFlag))
 	if DecodedRanFuncDef == nil {
 		return RanFuncDef, errors.New("e2sm wrapper is unable to decode RANFunctionDescription due to wrong or invalid input")
 	}
@@ -121,7 +123,7 @@ func (e *E2sm) RanFunctionDefinitionDecode(str string) (RanFuncDef *E2SM_KPM_RAN
 func (e *E2sm) EventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) (newBuffer []byte, err error) {
 	cptr := unsafe.Pointer(&Buffer[0])
 
-	Size := C.Encode_Event_Trigger_Definition(cptr, C.size_t(len(Buffer)), C.long(Report_Period))
+	Size := C.Encode_Event_Trigger_Definition(cptr, C.size_t(len(Buffer)), C.long(Report_Period), C.int(ASNPrintFlag))
 	if Size < 0 {
 		return make([]byte, 0), errors.New("e2sm wrapper is unable to encode EventTriggerDefinition due to wrong or invalid input")
 	}
@@ -249,7 +251,7 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 
 	cptr := unsafe.Pointer(&Buffer[0])
 
-	Size := C.Encode_Action_Definition_Format1(cptr, C.size_t(len(Buffer)), ActionDefinition_Format1)
+	Size := C.Encode_Action_Definition_Format1(cptr, C.size_t(len(Buffer)), ActionDefinition_Format1, C.int(ASNPrintFlag))
 	if Size < 0 {
 		return make([]byte, 0), errors.New("e2sm wrapper is unable to encode Action_Definition_Format1 due to wrong or invalid input")
 	}
@@ -261,7 +263,7 @@ func (e *E2sm) IndicationHeaderDecode(Buffer []byte) (IndiHdr *E2SM_KPM_Indicati
 	cptr := unsafe.Pointer(&Buffer[0])
 	IndiHdr = &E2SM_KPM_IndicationHeader{}
 
-	DecodedIndiHdr := C.Decode_Indication_Header(cptr, C.size_t(len(Buffer)))
+	DecodedIndiHdr := C.Decode_Indication_Header(cptr, C.size_t(len(Buffer)), C.int(ASNPrintFlag))
 	if DecodedIndiHdr == nil {
 		return IndiHdr, errors.New("e2sm wrapper is unable to decode IndicationHeader due to wrong or invalid input")
 	}
@@ -309,7 +311,7 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 	cptr := unsafe.Pointer(&Buffer[0])
 	IndiMsg = &E2SM_KPM_IndicationMessage{}
 
-	DecodedIndiMsg := C.Decode_Indication_Message(cptr, C.size_t(len(Buffer)))
+	DecodedIndiMsg := C.Decode_Indication_Message(cptr, C.size_t(len(Buffer)), C.int(ASNPrintFlag))
 	if DecodedIndiMsg == nil {
 		return IndiMsg, errors.New("e2sm wrapper is unable to decode IndicationMessage due to wrong or invalid input")
 	}
