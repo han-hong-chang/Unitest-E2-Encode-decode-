@@ -20,7 +20,7 @@ void Free_RAN_Function_Dscription(E2SM_KPM_RANfunction_Description_t *RAN_Functi
     ASN_STRUCT_FREE(asn_DEF_E2SM_KPM_RANfunction_Description, RAN_Function_Description);
 }
 
-ssize_t Encode_Event_Trigger_Definition(void *Buffer, size_t Buf_Size, long Report_Period){
+ssize_t Encode_Event_Trigger_Definition(void *Buffer, size_t Buf_Size, long Report_Period, int AsnPrint_Flag){
     E2SM_KPM_EventTriggerDefinition_t *Event_Trigger_Definition = (E2SM_KPM_EventTriggerDefinition_t *)malloc(sizeof(E2SM_KPM_EventTriggerDefinition_t));
     if(!Event_Trigger_Definition){
         fprintf(stderr,"Failed to allocate memory for E2SM_KPM_EventTriggerDefinition_t\n") ;
@@ -36,6 +36,10 @@ ssize_t Encode_Event_Trigger_Definition(void *Buffer, size_t Buf_Size, long Repo
 
     Event_Trigger_Definition->eventDefinition_formats.present = E2SM_KPM_EventTriggerDefinition__eventDefinition_formats_PR_eventDefinition_Format1;
     Event_Trigger_Definition->eventDefinition_formats.choice.eventDefinition_Format1 = Format1;
+
+    if(AsnPrint_Flag == 1){
+        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_EventTriggerDefinition, Event_Trigger_Definition);
+    }
 
     asn_enc_rval_t Result;
     Result = aper_encode_to_buffer(&asn_DEF_E2SM_KPM_EventTriggerDefinition, NULL, Event_Trigger_Definition, Buffer, Buf_Size);
@@ -135,7 +139,7 @@ E2SM_KPM_ActionDefinition_Format1_t *Pack_ActionDefinition_Format1(MeasurementIn
     return Format1;
 }
 
-ssize_t Encode_Action_Definition_Format1(void *Buffer, size_t Buf_Size, E2SM_KPM_ActionDefinition_Format1_t *Format1){
+ssize_t Encode_Action_Definition_Format1(void *Buffer, size_t Buf_Size, E2SM_KPM_ActionDefinition_Format1_t *Format1, int AsnPrint_Flag){
     E2SM_KPM_ActionDefinition_t *Action_Definition = (E2SM_KPM_ActionDefinition_t *)malloc(sizeof(E2SM_KPM_ActionDefinition_t));
     if(!Action_Definition){
         fprintf(stderr,"Failed to allocate memory for E2SM_KPM_ActionDefinition_t\n") ;
@@ -145,6 +149,10 @@ ssize_t Encode_Action_Definition_Format1(void *Buffer, size_t Buf_Size, E2SM_KPM
     Action_Definition->ric_Style_Type = 1;
     Action_Definition->actionDefinition_formats.present = E2SM_KPM_ActionDefinition__actionDefinition_formats_PR_actionDefinition_Format1;
     Action_Definition->actionDefinition_formats.choice.actionDefinition_Format1 = Format1;
+
+    if(AsnPrint_Flag == 1){
+        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_ActionDefinition, Action_Definition);
+    }
 
     asn_enc_rval_t Result;
     Result = aper_encode_to_buffer(&asn_DEF_E2SM_KPM_ActionDefinition, NULL, Action_Definition, Buffer, Buf_Size);
@@ -158,7 +166,7 @@ ssize_t Encode_Action_Definition_Format1(void *Buffer, size_t Buf_Size, E2SM_KPM
 
 }
 
-ssize_t Encode_Action_Definition_Format2(void *Buffer, size_t Buf_Size, UEID_t UEId, E2SM_KPM_ActionDefinition_Format1_t *Format1){
+ssize_t Encode_Action_Definition_Format2(void *Buffer, size_t Buf_Size, UEID_t UEId, E2SM_KPM_ActionDefinition_Format1_t *Format1, int AsnPrint_Flag){
     E2SM_KPM_ActionDefinition_t *Action_Definition = (E2SM_KPM_ActionDefinition_t *)malloc(sizeof(E2SM_KPM_ActionDefinition_t));
     if(!Action_Definition){
         fprintf(stderr,"Failed to allocate memory for E2SM_KPM_ActionDefinition_t\n") ;
@@ -176,6 +184,10 @@ ssize_t Encode_Action_Definition_Format2(void *Buffer, size_t Buf_Size, UEID_t U
     Action_Definition->ric_Style_Type = 2;
     Action_Definition->actionDefinition_formats.present = E2SM_KPM_ActionDefinition__actionDefinition_formats_PR_actionDefinition_Format2;
     Action_Definition->actionDefinition_formats.choice.actionDefinition_Format2 = Format2;
+
+    if(AsnPrint_Flag == 1){
+        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_ActionDefinition, Action_Definition);
+    }
 
     asn_enc_rval_t Result;
     Result = aper_encode_to_buffer(&asn_DEF_E2SM_KPM_ActionDefinition, NULL, Action_Definition, Buffer, Buf_Size);
@@ -252,7 +264,7 @@ MeasurementCondList_t *Pack_Measurement_Condition_List(MeasurementCondItem_t *Me
     return Measurement_Condition_List;
 }
 
-ssize_t Encode_Action_Definition_Format3(void *Buffer, size_t Buf_Size, MeasurementCondList_t *measCondList, GranularityPeriod_t granulPeriod, CGI_t *cellGlobalID){
+ssize_t Encode_Action_Definition_Format3(void *Buffer, size_t Buf_Size, MeasurementCondList_t *measCondList, GranularityPeriod_t granulPeriod, CGI_t *cellGlobalID, int AsnPrint_Flag){
     E2SM_KPM_ActionDefinition_t *Action_Definition = (E2SM_KPM_ActionDefinition_t *)malloc(sizeof(E2SM_KPM_ActionDefinition_t));
     if(!Action_Definition){
         fprintf(stderr,"Failed to allocate memory for E2SM_KPM_ActionDefinition_t\n") ;
@@ -275,6 +287,10 @@ ssize_t Encode_Action_Definition_Format3(void *Buffer, size_t Buf_Size, Measurem
     Action_Definition->actionDefinition_formats.present = E2SM_KPM_ActionDefinition__actionDefinition_formats_PR_actionDefinition_Format3;
     Action_Definition->actionDefinition_formats.choice.actionDefinition_Format3 = Format3;
 
+    if(AsnPrint_Flag == 1){
+        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_ActionDefinition, Action_Definition);
+    }
+
     asn_enc_rval_t Result;
     Result = aper_encode_to_buffer(&asn_DEF_E2SM_KPM_ActionDefinition, NULL, Action_Definition, Buffer, Buf_Size);
 
@@ -287,7 +303,7 @@ ssize_t Encode_Action_Definition_Format3(void *Buffer, size_t Buf_Size, Measurem
 
 }
 
-ssize_t Encode_Action_Definition_Format4(void *Buffer, size_t Buf_Size, TestCondInfo_t *testCondInfo, size_t Count, E2SM_KPM_ActionDefinition_Format1_t *Format1){
+ssize_t Encode_Action_Definition_Format4(void *Buffer, size_t Buf_Size, TestCondInfo_t *testCondInfo, size_t Count, E2SM_KPM_ActionDefinition_Format1_t *Format1, int AsnPrint_Flag){
     E2SM_KPM_ActionDefinition_t *Action_Definition = (E2SM_KPM_ActionDefinition_t *)malloc(sizeof(E2SM_KPM_ActionDefinition_t));
     if(!Action_Definition){
         fprintf(stderr,"Failed to allocate memory for E2SM_KPM_ActionDefinition_t\n") ;
@@ -315,6 +331,10 @@ ssize_t Encode_Action_Definition_Format4(void *Buffer, size_t Buf_Size, TestCond
     Action_Definition->actionDefinition_formats.present = E2SM_KPM_ActionDefinition__actionDefinition_formats_PR_actionDefinition_Format4;
     Action_Definition->actionDefinition_formats.choice.actionDefinition_Format4 = Format4;
 
+    if(AsnPrint_Flag == 1){
+        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_ActionDefinition, Action_Definition);
+    }
+
     asn_enc_rval_t Result;
     Result = aper_encode_to_buffer(&asn_DEF_E2SM_KPM_ActionDefinition, NULL, Action_Definition, Buffer, Buf_Size);
 
@@ -327,7 +347,7 @@ ssize_t Encode_Action_Definition_Format4(void *Buffer, size_t Buf_Size, TestCond
 
 }
 
-ssize_t Encode_Action_Definition_Format5(void *Buffer, size_t Buf_Size, UEID_t *UEId, size_t Count, E2SM_KPM_ActionDefinition_Format1_t *Format1){
+ssize_t Encode_Action_Definition_Format5(void *Buffer, size_t Buf_Size, UEID_t *UEId, size_t Count, E2SM_KPM_ActionDefinition_Format1_t *Format1, int AsnPrint_Flag){
     E2SM_KPM_ActionDefinition_t *Action_Definition = (E2SM_KPM_ActionDefinition_t *)malloc(sizeof(E2SM_KPM_ActionDefinition_t));
     if(!Action_Definition){
         fprintf(stderr,"Failed to allocate memory for E2SM_KPM_ActionDefinition_t\n") ;
@@ -355,6 +375,10 @@ ssize_t Encode_Action_Definition_Format5(void *Buffer, size_t Buf_Size, UEID_t *
     Action_Definition->actionDefinition_formats.present = E2SM_KPM_ActionDefinition__actionDefinition_formats_PR_actionDefinition_Format5;
     Action_Definition->actionDefinition_formats.choice.actionDefinition_Format5 = Format5;
 
+    if(AsnPrint_Flag == 1){
+        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_ActionDefinition, Action_Definition);
+    }
+
     asn_enc_rval_t Result;
     Result = aper_encode_to_buffer(&asn_DEF_E2SM_KPM_ActionDefinition, NULL, Action_Definition, Buffer, Buf_Size);
 
@@ -367,12 +391,14 @@ ssize_t Encode_Action_Definition_Format5(void *Buffer, size_t Buf_Size, UEID_t *
 
 }
 
-E2SM_KPM_IndicationHeader_t *Decode_Indication_Header(void *Buffer, size_t Buf_Size){
+E2SM_KPM_IndicationHeader_t *Decode_Indication_Header(void *Buffer, size_t Buf_Size, int AsnPrint_Flag){
     asn_dec_rval_t Result;
     E2SM_KPM_IndicationHeader_t *Indication_Header = 0;
     Result = aper_decode_complete(NULL, &asn_DEF_E2SM_KPM_IndicationHeader, (void **)&Indication_Header, Buffer, Buf_Size);
     if(Result.code == RC_OK){
-        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_IndicationHeader, Indication_Header);
+        if(AsnPrint_Flag == 1){
+            asn_fprint(stderr,  &asn_DEF_E2SM_KPM_IndicationHeader, Indication_Header);
+        }
         return Indication_Header;
     }else{
         ASN_STRUCT_FREE(asn_DEF_E2SM_KPM_IndicationHeader, Indication_Header);
@@ -385,12 +411,14 @@ void Free_Indication_Header(E2SM_KPM_IndicationHeader_t *Indication_Header){
     ASN_STRUCT_FREE(asn_DEF_E2SM_KPM_IndicationHeader, Indication_Header);
 }
 
-E2SM_KPM_IndicationMessage_t *Decode_Indication_Message(void *Buffer, size_t Buf_Size){
+E2SM_KPM_IndicationMessage_t *Decode_Indication_Message(void *Buffer, size_t Buf_Size, int AsnPrint_Flag){
     asn_dec_rval_t Result;
     E2SM_KPM_IndicationMessage_t *Indication_Message = 0;
     Result = aper_decode_complete(NULL, &asn_DEF_E2SM_KPM_IndicationMessage, (void **)&Indication_Message, Buffer, Buf_Size);
     if(Result.code == RC_OK){
-        asn_fprint(stderr,  &asn_DEF_E2SM_KPM_IndicationMessage, Indication_Message);
+        if(AsnPrint_Flag == 1){
+            asn_fprint(stderr,  &asn_DEF_E2SM_KPM_IndicationMessage, Indication_Message);
+        }
         return Indication_Message;
     }else{
         ASN_STRUCT_FREE(asn_DEF_E2SM_KPM_IndicationMessage, Indication_Message);
@@ -402,7 +430,11 @@ void Free_Indication_Message(E2SM_KPM_IndicationMessage_t *Indication_Message){
     ASN_STRUCT_FREE(asn_DEF_E2SM_KPM_IndicationMessage, Indication_Message);
 }
 
-ssize_t Encode_Indication_Header(void *Buffer, size_t Buf_Size, E2SM_KPM_IndicationHeader_t* IndicationHeader){
+ssize_t Encode_Indication_Header(void *Buffer, size_t Buf_Size, E2SM_KPM_IndicationHeader_t* IndicationHeader, int AsnPrint_Flag){
+    if(AsnPrint_Flag == 1){
+            asn_fprint(stderr,  &asn_DEF_E2SM_KPM_IndicationHeader, IndicationHeader);
+    }
+    
     asn_enc_rval_t Result;
     Result = aper_encode_to_buffer(&asn_DEF_E2SM_KPM_IndicationHeader, NULL, IndicationHeader, Buffer, Buf_Size);
 
