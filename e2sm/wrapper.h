@@ -21,9 +21,9 @@ ssize_t Encode_Event_Trigger_Definition(void *Buffer, size_t Buf_Size, long Repo
 MeasurementInfoItem_t *Pack_Measurement_Information(MeasurementTypeName_t *measName, MeasurementTypeID_t *measID, LabelInfoItem_t **LabelInfor, size_t Count);
 MeasurementInfoList_t *Pack_Measurement_Information_List(MeasurementInfoItem_t **Measurement_Information, size_t Count);
 CGI_t *Pack_Cell_Global_Id(PLMNIdentity_t *pLMNIdentity, NRCellIdentity_t *nRCellIdentity, EUTRACellIdentity_t *eUTRACellIdentity);
-MatchingCondList_t *Pack_Matching_Condition_List(MeasurementLabel_t *measLabel,TestCondInfo_t *testCondInfo, size_t measLabelCount, size_t testCondInfoCount);
+MatchingCondList_t *Pack_Matching_Condition_List(MeasurementLabel_t **measLabel,TestCondInfo_t **testCondInfo, size_t measLabelCount, size_t testCondInfoCount);
 MeasurementCondItem_t *Pack_Measurement_Condition_Item(MeasurementTypeName_t *measName, MeasurementTypeID_t *measID, MatchingCondList_t *Matching_Condition_List);
-MeasurementCondList_t *Pack_Measurement_Condition_List(MeasurementCondItem_t *Measurement_Condition_Item, size_t Count);
+MeasurementCondList_t *Pack_Measurement_Condition_List(MeasurementCondItem_t **Measurement_Condition_Item, size_t Count);
 
 E2SM_KPM_ActionDefinition_Format1_t *Pack_ActionDefinition_Format1(MeasurementInfoList_t *measInfoList, GranularityPeriod_t granulPeriod, CGI_t *cellGlobalID);
 

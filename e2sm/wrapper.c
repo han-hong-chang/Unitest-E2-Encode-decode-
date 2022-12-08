@@ -201,7 +201,7 @@ ssize_t Encode_Action_Definition_Format2(void *Buffer, size_t Buf_Size, UEID_t U
 
 }
 
-MatchingCondList_t *Pack_Matching_Condition_List(MeasurementLabel_t *measLabel,TestCondInfo_t *testCondInfo, size_t measLabelCount, size_t testCondInfoCount){
+MatchingCondList_t *Pack_Matching_Condition_List(MeasurementLabel_t **measLabel,TestCondInfo_t **testCondInfo, size_t measLabelCount, size_t testCondInfoCount){
     MatchingCondList_t *Matching_Condition_List = (MatchingCondList_t *)malloc(sizeof(MatchingCondList_t));
     if(!Matching_Condition_List){
         fprintf(stderr,"Failed to allocate memory for MatchingCondList_t\n") ;
@@ -212,7 +212,7 @@ MatchingCondList_t *Pack_Matching_Condition_List(MeasurementLabel_t *measLabel,T
         MatchingCondItem_t *Matching_Condition_Item = (MatchingCondItem_t*)malloc(sizeof(MatchingCondItem_t));
         assert(Matching_Condition_Item != 0);
         Matching_Condition_Item->present = MatchingCondItem_PR_measLabel;
-        Matching_Condition_Item->choice.measLabel = &measLabel[i] ;
+        Matching_Condition_Item->choice.measLabel = measLabel[i] ;
         ASN_SEQUENCE_ADD(&Matching_Condition_List->list , Matching_Condition_Item);
     }
 
@@ -220,7 +220,7 @@ MatchingCondList_t *Pack_Matching_Condition_List(MeasurementLabel_t *measLabel,T
         MatchingCondItem_t *Matching_Condition_Item = (MatchingCondItem_t*)malloc(sizeof(MatchingCondItem_t));
         assert(Matching_Condition_Item != 0);
         Matching_Condition_Item->present = MatchingCondItem_PR_testCondInfo;
-        Matching_Condition_Item->choice.testCondInfo = &testCondInfo[i] ;
+        Matching_Condition_Item->choice.testCondInfo = testCondInfo[i] ;
         ASN_SEQUENCE_ADD(&Matching_Condition_List->list, Matching_Condition_Item);
     }
 
@@ -248,7 +248,7 @@ MeasurementCondItem_t *Pack_Measurement_Condition_Item(MeasurementTypeName_t *me
     return Measurement_Condition_Item;
 }
 
-MeasurementCondList_t *Pack_Measurement_Condition_List(MeasurementCondItem_t *Measurement_Condition_Item, size_t Count){
+MeasurementCondList_t *Pack_Measurement_Condition_List(MeasurementCondItem_t **Measurement_Condition_Item, size_t Count){
     MeasurementCondList_t *Measurement_Condition_List = (MeasurementCondList_t*)malloc(sizeof(MeasurementCondList_t));
     if(!Measurement_Condition_List){
         fprintf(stderr,"Failed to allocate memory for MeasurementCondList_t\n") ;
@@ -258,7 +258,7 @@ MeasurementCondList_t *Pack_Measurement_Condition_List(MeasurementCondItem_t *Me
     for(int i = 0; i < Count; i++){
         MeasurementCondItem_t *MeasurementCondition_Item = (MeasurementCondItem_t*)malloc(sizeof(MeasurementCondItem_t));
         assert(MeasurementCondition_Item != 0);
-        MeasurementCondition_Item = &Measurement_Condition_Item[i] ;
+        MeasurementCondition_Item = Measurement_Condition_Item[i] ;
         ASN_SEQUENCE_ADD(&Measurement_Condition_List->list, MeasurementCondition_Item);
     }
     return Measurement_Condition_List;
