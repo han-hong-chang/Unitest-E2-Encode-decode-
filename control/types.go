@@ -79,7 +79,7 @@ type E2SM_KPM_ActionDefinition_Format1 struct {
 }
 
 type E2SM_KPM_ActionDefinition_Format3 struct {
-	measCondList []MeasurementondItem
+	measCondList []MeasurementCondItem
 	granulPeriod uint64
 	cellGlobalID *CGI /* OPTIONAL */
 }
@@ -90,7 +90,7 @@ type CGI struct {
 	NodebType    int //1: eNB, 2: gNB
 }
 
-type MeasurementondItem struct {
+type MeasurementCondItem struct {
 	measType     interface{} // Choose one
 	matchingCond []MatchingCondItem
 }
@@ -112,13 +112,6 @@ type valueBool Boolean
 type valueBitS BitString
 type valueOctS OctetString
 type valuePrtS PrintableString
-
-type MeasurementCondList []MeasurementCondItem
-
-type MeasurementCondItem struct {
-	measType     interface{}
-	matchingCond []MatchingCondItem
-}
 
 type E2SM_KPM_IndicationHeader struct { //Choose One
 	indicationHeader_FormatType int32
