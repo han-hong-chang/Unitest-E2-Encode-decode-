@@ -131,6 +131,7 @@ func (e *E2sm) EventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) 
 	return
 }
 
+// Todo: Include CGI in ActionDefinitionFmt1
 func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1, CellGlobalId *CGI) (newBuffer []byte, err error) {
 
 	Length := len(ActionDefinitionFmt1.measInfoList)
@@ -254,6 +255,142 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 	Size := C.Encode_Action_Definition_Format1(cptr, C.size_t(len(Buffer)), ActionDefinition_Format1, C.int(ASNPrintFlag))
 	if Size < 0 {
 		return make([]byte, 0), errors.New("e2sm wrapper is unable to encode Action_Definition_Format1 due to wrong or invalid input")
+	}
+	newBuffer = C.GoBytes(cptr, (C.int(Size)+7)/8)
+	return
+}
+
+func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3 E2SM_KPM_ActionDefinition_Format3) (newBuffer []byte, err error) {
+
+	Length := len(ActionDefinitionFmt3.measCondList)
+	Measurement_Condition_List := []*C.MeasurementCondItem_t{}
+
+	for i := 0; i < Length; i++ {
+
+		// Pack MatchingCondItem
+		Measurement_Label_List := []*C.MeasurementLabel_t{}
+
+		MatchCondLength := 1
+		//MatchCondLength := len(ActionDefinitionFmt3.measCondList[i].matchingCond) => Default 1
+
+		for j := 0; j < MatchCondLength; j++ {
+			//Todo: Currently using default value
+			MeasurementLabel := (*C.MeasurementLabel_t)(C.malloc(C.sizeof_MeasurementLabel_t))
+
+			nolabel := int64(0)
+			MeasurementLabel.noLabel = (*C.long)(unsafe.Pointer(&nolabel))
+			MeasurementLabel.plmnID = nil
+			MeasurementLabel.sliceID = nil
+			MeasurementLabel.fiveQI = nil
+			MeasurementLabel.qFI = nil
+			MeasurementLabel.qCI = nil
+			MeasurementLabel.qCImax = nil
+			MeasurementLabel.qCImin = nil
+			MeasurementLabel.aRPmax = nil
+			MeasurementLabel.aRPmin = nil
+			MeasurementLabel.bitrateRange = nil
+			MeasurementLabel.layerMU_MIMO = nil
+			MeasurementLabel.sUM = nil
+			MeasurementLabel.distBinX = nil
+			MeasurementLabel.distBinY = nil
+			MeasurementLabel.distBinZ = nil
+			MeasurementLabel.preLabelOverride = nil
+			MeasurementLabel.startEndInd = nil
+			MeasurementLabel.min = nil
+			MeasurementLabel.max = nil
+			MeasurementLabel.avg = nil
+
+			Measurement_Label_List = append(Measurement_Label_List, MeasurementLabel)
+		}
+
+		MatchingCondList := C.Pack_Matching_Condition_List(&Measurement_Label_List[0], nil, C.size_t(MatchCondLength), C.size_t(0))
+
+		// Pack MeasurementConditionItem
+		switch ActionDefinitionFmt3.measCondList[i].measType.(type) {
+		case PrintableString:
+			//Using C to allocate memory for C structure
+			measName := (*C.MeasurementTypeName_t)(C.malloc(C.sizeof_MeasurementTypeName_t))
+
+			measName.buf = (*C.uchar)(C.CBytes(ActionDefinitionFmt3.measCondList[i].measType.(PrintableString).Buf))
+			measName.size = C.size_t(len(ActionDefinitionFmt3.measCondList[i].measType.(PrintableString).Buf))
+
+			MeasurementConditionItem := C.Pack_Measurement_Condition_Item(measName, nil, MatchingCondList)
+			if MeasurementConditionItem == nil {
+				C.free(unsafe.Pointer(measName))
+				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Condition_Item due to wrong or invalid input")
+			}
+			Measurement_Condition_List = append(Measurement_Condition_List, MeasurementConditionItem)
+		case int64:
+			//Using C to allocate memory for C structure
+			measID := (*C.MeasurementTypeID_t)(C.malloc(C.sizeof_MeasurementTypeID_t))
+
+			*measID = C.long(ActionDefinitionFmt3.measCondList[i].measType.(int64))
+
+			MeasurementConditionItem := C.Pack_Measurement_Condition_Item(nil, measID, MatchingCondList)
+			if MeasurementConditionItem == nil {
+				C.free(unsafe.Pointer(measID))
+				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Condition_Item due to wrong or invalid input")
+			}
+			Measurement_Condition_List = append(Measurement_Condition_List, MeasurementConditionItem)
+		default:
+		}
+
+	}
+
+	MeasurementCondList := C.Pack_Measurement_Condition_List(&Measurement_Condition_List[0], C.size_t(Length))
+	if MeasurementCondList == nil {
+		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Measurement_Condition_List due to wrong or invalid input")
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// Pack CGI
+	CGI := &C.CGI_t{}
+	CGI = nil // If CellGlobalId == nil, CGI == nil
+
+	if ActionDefinitionFmt3.cellGlobalID != nil {
+		//Parse PLMNId
+		PLMNIdBuf, err := ParsePlmnId(ActionDefinitionFmt3.cellGlobalID.pLMNIdentity)
+		if err != nil {
+			return make([]byte, 0), err
+		}
+
+		PlmnId := (*C.PLMNIdentity_t)(C.malloc(C.sizeof_PLMNIdentity_t))
+		PlmnId.buf = (*C.uchar)(C.CBytes(PLMNIdBuf))
+		PlmnId.size = C.size_t(3) //PLMNId use 3 Octets
+
+		// Parse CellId
+		NrCellId := &C.NRCellIdentity_t{}
+		NrCellId = nil
+		EutraCellId := &C.EUTRACellIdentity_t{}
+		EutraCellId = nil
+
+		if ActionDefinitionFmt3.cellGlobalID.NodebType == 2 {
+
+			NrCellIdBuf, err := ParseCellId(ActionDefinitionFmt3.cellGlobalID.CellIdentity)
+			if err != nil {
+				return make([]byte, 0), err
+			}
+
+			NrCellId = (*C.NRCellIdentity_t)(C.malloc(C.sizeof_NRCellIdentity_t))
+			NrCellId.buf = (*C.uchar)(C.CBytes(NrCellIdBuf))
+			NrCellId.size = C.size_t(5) // Total 5 Bytes = 40 bits, only use 36bits in 5G.
+			NrCellId.bits_unused = C.int(4)
+		} // Todo: add EutraCellId Support
+
+		//Pack into ASN.1 Format
+		CGI = C.Pack_Cell_Global_Id(PlmnId, NrCellId, EutraCellId)
+		if CGI == nil {
+			return make([]byte, 0), errors.New("e2sm wrapper is unable to pack CGI due to wrong or invalid input")
+		}
+
+	}
+
+	cptr := unsafe.Pointer(&Buffer[0])
+
+	Size := C.Encode_Action_Definition_Format3(cptr, C.size_t(len(Buffer)), MeasurementCondList, C.ulong(ActionDefinitionFmt3.granulPeriod), CGI, C.int(ASNPrintFlag))
+	if Size < 0 {
+		return make([]byte, 0), errors.New("e2sm wrapper is unable to encode Action_Definition_Format3 due to wrong or invalid input")
 	}
 	newBuffer = C.GoBytes(cptr, (C.int(Size)+7)/8)
 	return
@@ -914,7 +1051,6 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 		return IndiMsg, errors.New("Unknown RIC Indication Message Format")
 	}
 	return
-
 }
 
 func ParseUeId(ptr unsafe.Pointer) (ueID UEID) {
