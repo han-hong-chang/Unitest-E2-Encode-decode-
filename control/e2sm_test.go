@@ -64,7 +64,11 @@ func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
 	ActionDefinitionFmt1 := E2SM_KPM_ActionDefinition_Format1{
 		measInfoList: []MeasurementInfoItem{},
 		granulPeriod: 1,
-		cellGlobalID: nil,
+		cellGlobalID: &CGI{
+			pLMNIdentity: "001F01",
+			CellIdentity: "000100100011010001011100000000000001",
+			NodebType:    2,
+		},
 	}
 	Buffer := make([]byte, 200)
 
@@ -80,15 +84,9 @@ func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
 		ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem1)
 	}
 
-	CellGlobalId := &CGI{
-		pLMNIdentity: "001F01",
-		CellIdentity: "000100100011010001011100000000000001",
-		NodebType:    2,
-	}
-
 	e2sm := &E2sm{}
 
-	NewBuffer, err := e2sm.ActionDefinitionFormat1Encode(Buffer, ActionDefinitionFmt1, CellGlobalId)
+	NewBuffer, err := e2sm.ActionDefinitionFormat1Encode(Buffer, ActionDefinitionFmt1)
 	if err != nil {
 		t.Error("Failed to Encode ActionDefinition, err = ", err)
 	} else {

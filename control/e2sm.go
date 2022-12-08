@@ -15,7 +15,7 @@ import (
 
 const (
 	E2smKPMv2OId string = "1.3.6.1.4.1.53148.1.2.2.2" //E2SM-KPMv2 OID
-	ASNPrintFlag int    = 0
+	ASNPrintFlag int    = 1
 )
 
 type E2sm struct {
@@ -131,8 +131,7 @@ func (e *E2sm) EventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) 
 	return
 }
 
-// Todo: Include CGI in ActionDefinitionFmt1
-func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1, CellGlobalId *CGI) (newBuffer []byte, err error) {
+func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1) (newBuffer []byte, err error) {
 
 	Length := len(ActionDefinitionFmt1.measInfoList)
 	Measurement_Information_List := []*C.MeasurementInfoItem_t{}
@@ -205,11 +204,11 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 
 	// Pack CGI
 	CGI := &C.CGI_t{}
-	CGI = nil // If CellGlobalId == nil, CGI == nil
+	CGI = nil // If cellGlobalID == nil, CGI == nil
 
-	if CellGlobalId != nil {
+	if ActionDefinitionFmt1.cellGlobalID != nil {
 		//Parse PLMNId
-		PLMNIdBuf, err := ParsePlmnId(CellGlobalId.pLMNIdentity)
+		PLMNIdBuf, err := ParsePlmnId(ActionDefinitionFmt1.cellGlobalID.pLMNIdentity)
 		if err != nil {
 			return make([]byte, 0), err
 		}
@@ -224,9 +223,9 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 		EutraCellId := &C.EUTRACellIdentity_t{}
 		EutraCellId = nil
 
-		if CellGlobalId.NodebType == 2 {
+		if ActionDefinitionFmt1.cellGlobalID.NodebType == 2 {
 
-			NrCellIdBuf, err := ParseCellId(CellGlobalId.CellIdentity)
+			NrCellIdBuf, err := ParseCellId(ActionDefinitionFmt1.cellGlobalID.CellIdentity)
 			if err != nil {
 				return make([]byte, 0), err
 			}
@@ -346,7 +345,7 @@ func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3
 
 	// Pack CGI
 	CGI := &C.CGI_t{}
-	CGI = nil // If CellGlobalId == nil, CGI == nil
+	CGI = nil // If cellGlobalID == nil, CGI == nil
 
 	if ActionDefinitionFmt3.cellGlobalID != nil {
 		//Parse PLMNId

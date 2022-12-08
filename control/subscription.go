@@ -120,17 +120,17 @@ func GenerateActionDefinitionFormat1(RanName string, ReportStyleItem RIC_ReportS
 		return make([]byte, 0), err
 	}
 
-	ActionDefinitionFormat1 := E2SM_KPM_ActionDefinition_Format1{
-		measInfoList: MeasInfoList,
-		granulPeriod: GranulPeriod,
-		cellGlobalID: nil,
-	}
-
 	//Parse CGI
 	CGI := ParseCQI(RanName)
 
+	ActionDefinitionFormat1 := E2SM_KPM_ActionDefinition_Format1{
+		measInfoList: MeasInfoList,
+		granulPeriod: GranulPeriod,
+		cellGlobalID: CGI,
+	}
+
 	e2sm := &E2sm{}
-	ActionDefinition, err = e2sm.ActionDefinitionFormat1Encode(Buffer, ActionDefinitionFormat1, CGI)
+	ActionDefinition, err = e2sm.ActionDefinitionFormat1Encode(Buffer, ActionDefinitionFormat1)
 	return ActionDefinition, err
 }
 
