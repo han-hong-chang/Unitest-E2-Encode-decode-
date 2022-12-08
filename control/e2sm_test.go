@@ -58,6 +58,7 @@ func TestE2smEventTriggerDefinitionEncode(t *testing.T) {
 		fmt.Println("==== ASN.1 Encoded Byte =====")
 		fmt.Println(fmt.Sprintf("%x", NewBuffer))
 	}
+
 }
 
 func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
@@ -93,6 +94,44 @@ func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
 		fmt.Println("==== ASN.1 Encoded Byte =====")
 		fmt.Println(fmt.Sprintf("%x", NewBuffer))
 	}
+
+}
+
+func TestE2smActionDefinitionFormat3Encode(t *testing.T) {
+	ActionDefinitionFmt3 := E2SM_KPM_ActionDefinition_Format3{
+		measCondList: []MeasurementCondItem{},
+		granulPeriod: 1,
+		cellGlobalID: &CGI{
+			pLMNIdentity: "001F01",
+			CellIdentity: "000100100011010001011100000000000001",
+			NodebType:    2},
+	}
+
+	Buffer := make([]byte, 200)
+
+	for i := 0; i < 10; i++ {
+		measName := PrintableString{
+			Buf:  []byte("RSRP"),
+			Size: 4,
+		}
+		measCondItem := MeasurementCondItem{
+			measType:     measName,
+			matchingCond: []MatchingCondItem{},
+		}
+
+		ActionDefinitionFmt3.measCondList = append(ActionDefinitionFmt3.measCondList, measCondItem)
+	}
+
+	e2sm := &E2sm{}
+
+	NewBuffer, err := e2sm.ActionDefinitionFormat3Encode(Buffer, ActionDefinitionFmt3)
+	if err != nil {
+		t.Error("Failed to Encode ActionDefinition, err = ", err)
+	} else {
+		fmt.Println("==== ASN.1 Encoded Byte =====")
+		fmt.Println(fmt.Sprintf("%x", NewBuffer))
+	}
+
 }
 
 func TestE2smIndicationHeaderDecoding(t *testing.T) {
