@@ -78,13 +78,22 @@ type E2SM_KPM_ActionDefinition_Format1 struct {
 	cellGlobalID *CGI /* OPTIONAL */
 }
 
+type E2SM_KPM_ActionDefinition_Format3 struct {
+	measCondList []MeasurementondItem
+	granulPeriod uint64
+	cellGlobalID *CGI /* OPTIONAL */
+}
+
 type CGI struct {
 	pLMNIdentity string
 	CellIdentity string
 	NodebType    int //1: eNB, 2: gNB
 }
 
-type MatchingCondList []MatchingCondItem
+type MeasurementondItem struct {
+	measType     interface{} // Choose one
+	matchingCond []MatchingCondItem
+}
 
 type MatchingCondItem interface{} //Chooes one
 type measLabel MeasurementLabel
@@ -108,7 +117,7 @@ type MeasurementCondList []MeasurementCondItem
 
 type MeasurementCondItem struct {
 	measType     interface{}
-	matchingCond MatchingCondList
+	matchingCond []MatchingCondItem
 }
 
 type E2SM_KPM_IndicationHeader struct { //Choose One
@@ -158,7 +167,7 @@ type MeasurementCondUEidList []MeasurementCondUEidItem
 
 type MeasurementCondUEidItem struct {
 	measType         interface{}
-	matchingCond     MatchingCondList
+	matchingCond     []MatchingCondItem
 	matchingUEidList *[]MatchingUEidItem /* OPTIONAL */
 }
 
