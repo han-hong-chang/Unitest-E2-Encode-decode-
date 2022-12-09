@@ -139,10 +139,14 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 
 	for i := 0; i < Length; i++ {
 		//Todo: Currently using default value
-		nolabel := int64(0)
 		LabelInfoItem := (*C.LabelInfoItem_t)(C.malloc(C.sizeof_LabelInfoItem_t))
+		defer C.free(unsafe.Pointer(LabelInfoItem))
 
-		LabelInfoItem.measLabel.noLabel = (*C.long)(unsafe.Pointer(&nolabel))
+		True := (*C.int)(C.malloc(C.sizeof_int))
+		defer C.free(unsafe.Pointer(True))
+		*True = 0
+
+		LabelInfoItem.measLabel.noLabel = (*C.long)(unsafe.Pointer(True))
 		LabelInfoItem.measLabel.plmnID = nil
 		LabelInfoItem.measLabel.sliceID = nil
 		LabelInfoItem.measLabel.fiveQI = nil
@@ -170,6 +174,7 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 		case PrintableString:
 			//Using C to allocate memory for C structure
 			measName := (*C.MeasurementTypeName_t)(C.malloc(C.sizeof_MeasurementTypeName_t))
+			defer C.free(unsafe.Pointer(measName))
 
 			measName.buf = (*C.uchar)(C.CBytes(ActionDefinitionFmt1.measInfoList[i].measType.(PrintableString).Buf))
 			measName.size = C.size_t(len(ActionDefinitionFmt1.measInfoList[i].measType.(PrintableString).Buf))
@@ -183,6 +188,7 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 		case int64:
 			//Using C to allocate memory for C structure
 			measID := (*C.MeasurementTypeID_t)(C.malloc(C.sizeof_MeasurementTypeID_t))
+			defer C.free(unsafe.Pointer(measID))
 
 			*measID = C.long(ActionDefinitionFmt1.measInfoList[i].measType.(int64))
 
@@ -214,6 +220,8 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 		}
 
 		PlmnId := (*C.PLMNIdentity_t)(C.malloc(C.sizeof_PLMNIdentity_t))
+		defer C.free(unsafe.Pointer(PlmnId))
+
 		PlmnId.buf = (*C.uchar)(C.CBytes(PLMNIdBuf))
 		PlmnId.size = C.size_t(3) //PLMNId use 3 Octets
 
@@ -231,6 +239,8 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 			}
 
 			NrCellId = (*C.NRCellIdentity_t)(C.malloc(C.sizeof_NRCellIdentity_t))
+			defer C.free(unsafe.Pointer(NrCellId))
+
 			NrCellId.buf = (*C.uchar)(C.CBytes(NrCellIdBuf))
 			NrCellId.size = C.size_t(5) // Total 5 Bytes = 40 bits, only use 36bits in 5G.
 			NrCellId.bits_unused = C.int(4)
@@ -262,7 +272,7 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3 E2SM_KPM_ActionDefinition_Format3) (newBuffer []byte, err error) {
 
 	Length := len(ActionDefinitionFmt3.measCondList)
-	Measurement_Condition_List := []*C.MeasurementCondItem_t{}
+	Measurement_Condition_List := []*C.MeasurementCondItem_t{} //It is golang type pointer >> golang memory.
 
 	for i := 0; i < Length; i++ {
 
@@ -274,31 +284,36 @@ func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3
 
 		for j := 0; j < MatchCondLength; j++ {
 			//Todo: Currently using default value
+			True := (*C.int)(C.malloc(C.sizeof_int))
+			defer C.free(unsafe.Pointer(True))
+
+			*True = 0
+
 			MeasurementLabel := (*C.MeasurementLabel_t)(C.malloc(C.sizeof_MeasurementLabel_t))
-
-			nolabel := int64(0)
-			MeasurementLabel.noLabel = (*C.long)(unsafe.Pointer(&nolabel))
-			MeasurementLabel.plmnID = nil
-			MeasurementLabel.sliceID = nil
-			MeasurementLabel.fiveQI = nil
-			MeasurementLabel.qFI = nil
-			MeasurementLabel.qCI = nil
-			MeasurementLabel.qCImax = nil
-			MeasurementLabel.qCImin = nil
-			MeasurementLabel.aRPmax = nil
-			MeasurementLabel.aRPmin = nil
-			MeasurementLabel.bitrateRange = nil
-			MeasurementLabel.layerMU_MIMO = nil
-			MeasurementLabel.sUM = nil
-			MeasurementLabel.distBinX = nil
-			MeasurementLabel.distBinY = nil
-			MeasurementLabel.distBinZ = nil
-			MeasurementLabel.preLabelOverride = nil
-			MeasurementLabel.startEndInd = nil
-			MeasurementLabel.min = nil
-			MeasurementLabel.max = nil
-			MeasurementLabel.avg = nil
-
+			defer C.free(unsafe.Pointer(MeasurementLabel))
+			*MeasurementLabel = C.MeasurementLabel_t{
+				noLabel:          (*C.long)(unsafe.Pointer(True)),
+				plmnID:           nil,
+				sliceID:          nil,
+				fiveQI:           nil,
+				qFI:              nil,
+				qCI:              nil,
+				qCImax:           nil,
+				qCImin:           nil,
+				aRPmax:           nil,
+				aRPmin:           nil,
+				bitrateRange:     nil,
+				layerMU_MIMO:     nil,
+				sUM:              nil,
+				distBinX:         nil,
+				distBinY:         nil,
+				distBinZ:         nil,
+				preLabelOverride: nil,
+				startEndInd:      nil,
+				min:              nil,
+				max:              nil,
+				avg:              nil,
+			}
 			Measurement_Label_List = append(Measurement_Label_List, MeasurementLabel)
 		}
 
@@ -309,6 +324,7 @@ func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3
 		case PrintableString:
 			//Using C to allocate memory for C structure
 			measName := (*C.MeasurementTypeName_t)(C.malloc(C.sizeof_MeasurementTypeName_t))
+			defer C.free(unsafe.Pointer(measName))
 
 			measName.buf = (*C.uchar)(C.CBytes(ActionDefinitionFmt3.measCondList[i].measType.(PrintableString).Buf))
 			measName.size = C.size_t(len(ActionDefinitionFmt3.measCondList[i].measType.(PrintableString).Buf))
@@ -322,6 +338,7 @@ func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3
 		case int64:
 			//Using C to allocate memory for C structure
 			measID := (*C.MeasurementTypeID_t)(C.malloc(C.sizeof_MeasurementTypeID_t))
+			defer C.free(unsafe.Pointer(measID))
 
 			*measID = C.long(ActionDefinitionFmt3.measCondList[i].measType.(int64))
 
@@ -355,6 +372,8 @@ func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3
 		}
 
 		PlmnId := (*C.PLMNIdentity_t)(C.malloc(C.sizeof_PLMNIdentity_t))
+		defer C.free(unsafe.Pointer(PlmnId))
+
 		PlmnId.buf = (*C.uchar)(C.CBytes(PLMNIdBuf))
 		PlmnId.size = C.size_t(3) //PLMNId use 3 Octets
 
@@ -372,6 +391,8 @@ func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3
 			}
 
 			NrCellId = (*C.NRCellIdentity_t)(C.malloc(C.sizeof_NRCellIdentity_t))
+			defer C.free(unsafe.Pointer(NrCellId))
+
 			NrCellId.buf = (*C.uchar)(C.CBytes(NrCellIdBuf))
 			NrCellId.size = C.size_t(5) // Total 5 Bytes = 40 bits, only use 36bits in 5G.
 			NrCellId.bits_unused = C.int(4)
