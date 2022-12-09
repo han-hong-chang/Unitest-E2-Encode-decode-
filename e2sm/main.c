@@ -13,6 +13,8 @@ void VerifyActionDefinitionEncoding();
 void VerifyIndicationHeaderDecoding();
 void VerifyIndicationHeaderEncoding();
 
+int ASN_Print_Flag = 1;
+
 int main(){
     VerifyIndicationHeaderEncoding();
     //VerifyActionDefinitionEncoding();
@@ -48,7 +50,7 @@ void VerifyEventTriggerDefinitionEncoding(){
     ssize_t Coded_Size;
     long Report_Period = 1;
 
-    Coded_Size = Encode_Event_Trigger_Definition((void *)Buffer, Buf_Size, Report_Period);
+    Coded_Size = Encode_Event_Trigger_Definition((void *)Buffer, Buf_Size, Report_Period, ASN_Print_Flag);
     if(Coded_Size == -1){
         fprintf(stderr, "Failed to encode event trigger definition\n") ;
         exit(1);
@@ -138,7 +140,7 @@ void VerifyActionDefinitionEncoding(){
     uint8_t Buffer[1500];
     size_t Buf_Size = 1500;
     ssize_t Coded_Size;
-    Coded_Size = Encode_Action_Definition_Format1(Buffer, Buf_Size, ActionFormat1);
+    Coded_Size = Encode_Action_Definition_Format1(Buffer, Buf_Size, ActionFormat1, ASN_Print_Flag);
     if(Coded_Size == -1){
         fprintf(stderr, "Failed to encode Action Format 1\n") ;
         exit(1);
@@ -186,7 +188,7 @@ void VerifyActionDefinitionEncoding(){
     uint8_t Buffer2[1500];
     size_t Buf_Size2 = 1500;
     ssize_t Coded_Size2;
-    Coded_Size2 = Encode_Action_Definition_Format2(Buffer2, Buf_Size2, UEID, ActionFormat1);
+    Coded_Size2 = Encode_Action_Definition_Format2(Buffer2, Buf_Size2, UEID, ActionFormat1, ASN_Print_Flag);
     if(Coded_Size2 == -1){
         fprintf(stderr, "Failed to encode Action Format 2\n") ;
         exit(1);
@@ -230,7 +232,7 @@ void VerifyActionDefinitionEncoding(){
     uint8_t Buffer3[1500];
     size_t Buf_Size3 = 1500;
     ssize_t Coded_Size3;
-    Coded_Size3 = Encode_Action_Definition_Format3(Buffer3, Buf_Size3, MeaCondList, 10, NULL);
+    Coded_Size3 = Encode_Action_Definition_Format3(Buffer3, Buf_Size3, MeaCondList, 10, NULL, ASN_Print_Flag);
     if(Coded_Size3 == -1){
         fprintf(stderr, "Failed to encode Action Format 3\n") ;
         exit(1);
@@ -261,7 +263,7 @@ void VerifyIndicationHeaderDecoding(){
     uint8_t Payload[] = {14, 231, 27, 163, 51, 0, 0, 6, 68, 85, 32, 49, 58, 49, 16, 68, 85, 28, 86, 105, 97, 118, 105, 32, 82, 73, 67, 32, 84, 101, 115, 116} ;
     
     E2SM_KPM_IndicationHeader_t *IndicationHeader = 0;
-    IndicationHeader = Decode_Indication_Header(Payload, sizeof(Payload));
+    IndicationHeader = Decode_Indication_Header(Payload, sizeof(Payload), ASN_Print_Flag);
 
     if(IndicationHeader == NULL){
         fprintf(stderr, "Failed to decode E2SM-KPM IndicationHeader\n");
@@ -304,7 +306,7 @@ void VerifyIndicationHeaderEncoding(){
     size_t Buf_Size = 1500;
     ssize_t Coded_Size;
 
-    Coded_Size = Encode_Indication_Header(Buffer, Buf_Size, IndicationHeader) ;
+    Coded_Size = Encode_Indication_Header(Buffer, Buf_Size, IndicationHeader, ASN_Print_Flag) ;
 
     if(Coded_Size < 0){
         fprintf(stderr, "Failed to Encode E2SM-KPM IndicationHeader\n");
@@ -324,7 +326,7 @@ void VerifyIndicationHeaderEncoding(){
     memcpy(Payload, Buffer, Coded_Size) ;
 
     E2SM_KPM_IndicationHeader_t *IndicationHeader_2 = 0;
-    IndicationHeader_2 = Decode_Indication_Header(Payload, Coded_Size);
+    IndicationHeader_2 = Decode_Indication_Header(Payload, Coded_Size, ASN_Print_Flag);
 
     if(IndicationHeader_2 == NULL){
         fprintf(stderr, "Failed to decode E2SM-KPM IndicationHeader\n");
