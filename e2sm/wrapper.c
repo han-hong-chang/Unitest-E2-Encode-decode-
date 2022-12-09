@@ -279,7 +279,7 @@ ssize_t Encode_Action_Definition_Format3(void *Buffer, size_t Buf_Size, Measurem
 
     Format3->measCondList = *measCondList;
     Format3->granulPeriod = granulPeriod;
-    if(!cellGlobalID){
+    if(cellGlobalID != NULL){
         Format3->cellGlobalID = cellGlobalID;
     }
 
