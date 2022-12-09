@@ -65,6 +65,32 @@ func ParsemeasInfoList(measInfoActionList []MeasurementInfo_Action_Item) (measIn
 	return measInfoList, nil
 }
 
+func ParsemeasCondList(measInfoActionList []MeasurementInfo_Action_Item) (measCondList []MeasurementCondItem, err error) {
+	if len(measInfoActionList) == 0 {
+		return make([]MeasurementCondItem, 0), errors.New("There is no information in measInfo_Action_List")
+	}
+
+	measCondList = []MeasurementCondItem{}
+
+	for i := 0; i < len(measInfoActionList); i++ {
+		measName := PrintableString{
+			Buf:  measInfoActionList[i].measName.Buf,
+			Size: measInfoActionList[i].measName.Size,
+		}
+		measCondItem := MeasurementCondItem{
+			measType:     measName,
+			matchingCond: []MatchingCondItem{},
+		}
+
+		measCondList = append(measCondList, measCondItem)
+	}
+
+	if len(measCondList) == 0 {
+		return make([]MeasurementCondItem, 0), errors.New("Failed to parse measInfo_Action_List")
+	}
+	return measCondList, nil
+}
+
 func ParseCQI(RanName string) (CellGlobalId *CGI) {
 	/** Just Skip because RIC platform hasn't supported the feature **/
 	/*
@@ -134,6 +160,30 @@ func GenerateActionDefinitionFormat1(RanName string, ReportStyleItem RIC_ReportS
 	return ActionDefinition, err
 }
 
+func GenerateActionDefinitionFormat3(RanName string, ReportStyleItem RIC_ReportStyle_Item) (ActionDefinition []byte, err error) {
+	// If the coded length is too long, it needs to enlarge the buffer
+	Buffer := make([]byte, 5000)
+
+	//Parse Measurement Condition List
+	MeasCondList, err := ParsemeasCondList(ReportStyleItem.measInfo_Action_List)
+	if err != nil {
+		return make([]byte, 0), err
+	}
+
+	//Parse CGI
+	CGI := ParseCQI(RanName)
+
+	ActionDefinitionFormat3 := E2SM_KPM_ActionDefinition_Format3{
+		measCondList: MeasCondList,
+		granulPeriod: GranulPeriod,
+		cellGlobalID: CGI,
+	}
+
+	e2sm := &E2sm{}
+	ActionDefinition, err = e2sm.ActionDefinitionFormat3Encode(Buffer, ActionDefinitionFormat3)
+	return ActionDefinition, err
+}
+
 func GenerateActionDefinition(RanName string, ReportStyleItem RIC_ReportStyle_Item) (ActionToBeSetupItem apimodel.ActionToBeSetup, err error) {
 	ActionFormatType := ReportStyleItem.ric_ActionFormat_Type
 	ActionDefinition := []byte{}
@@ -144,7 +194,7 @@ func GenerateActionDefinition(RanName string, ReportStyleItem RIC_ReportStyle_It
 	case 2:
 		return ActionToBeSetupItem, errors.New("kpm doesn't support action type 2")
 	case 3:
-		return ActionToBeSetupItem, errors.New("kpm doesn't support action type 3")
+		ActionDefinition, err = GenerateActionDefinitionFormat3(RanName, ReportStyleItem)
 	case 4:
 		return ActionToBeSetupItem, errors.New("kpm doesn't support action type 4")
 	case 5:
