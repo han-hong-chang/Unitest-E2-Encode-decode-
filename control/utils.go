@@ -3,6 +3,7 @@ package control
 import (
 	"encoding/binary"
 	"strconv"
+	"strings"
 )
 
 func ByteSlice2Int64(BS []byte) (I int64) {
@@ -25,5 +26,10 @@ func ConvertStr2Byte(str string) (val []byte) {
 		v, _ := strconv.ParseUint(SubStr, 16, 8)
 		val = append(val, byte(v))
 	}
+	return
+}
+
+func AddDotBetween2Number(str string) (str1 string) {
+	str1 = strings.Replace(str, " ", ", ", -1)
 	return
 }
