@@ -3,10 +3,47 @@
 
 //Include Libraries
 # include "E2SM-KPM-RANfunction-Description.h"
+
 # include "E2SM-KPM-EventTriggerDefinition.h"
+# include "E2SM-KPM-EventTriggerDefinition-Format1.h"
+
 # include "E2SM-KPM-ActionDefinition.h"
+# include "E2SM-KPM-ActionDefinition-Format1.h"
+# include "E2SM-KPM-ActionDefinition-Format2.h"
+# include "E2SM-KPM-ActionDefinition-Format3.h"
+# include "E2SM-KPM-ActionDefinition-Format4.h"
+# include "E2SM-KPM-ActionDefinition-Format5.h"
+
+
 # include "E2SM-KPM-IndicationHeader.h"
 # include "E2SM-KPM-IndicationMessage.h"
+
+# include "MeasurementInfoItem.h"
+# include "MeasurementInfoList.h"
+# include "MeasurementTypeName.h"
+# include "MeasurementTypeID.h"
+# include "MeasurementCondItem.h"
+# include "MeasurementCondList.h"
+# include "MeasurementTypeID.h"
+# include "MeasurementLabel.h"
+
+# include "MatchingCondList.h"
+# include "MatchingCondItem.h"
+# include "MatchingUeCondPerSubList.h"
+# include "MatchingUeCondPerSubItem.h"
+# include "MatchingUEidPerSubItem.h"
+
+# include "LabelInfoItem.h"
+# include "CGI.h"
+# include "PLMNIdentity.h"
+# include "NRCellIdentity.h"
+# include "EUTRACellIdentity.h"
+# include "NR-CGI.h"
+# include "EUTRA-CGI.h"
+
+# include "TestCondInfo.h"
+# include "GranularityPeriod.h"
+# include "UEID.h"
 
 #ifdef __cplusplus
 extern "C" {
