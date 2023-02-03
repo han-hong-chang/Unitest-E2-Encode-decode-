@@ -16,7 +16,11 @@
 
 
 # include "E2SM-KPM-IndicationHeader.h"
+# include "E2SM-KPM-IndicationHeader-Format1.h"
 # include "E2SM-KPM-IndicationMessage.h"
+# include "E2SM-KPM-IndicationMessage-Format1.h"
+# include "E2SM-KPM-IndicationMessage-Format2.h"
+# include "E2SM-KPM-IndicationMessage-Format3.h"
 
 # include "MeasurementInfoItem.h"
 # include "MeasurementInfoList.h"
@@ -29,6 +33,7 @@
 
 # include "MatchingCondList.h"
 # include "MatchingCondItem.h"
+# include "MatchingUEidList.h"
 # include "MatchingUeCondPerSubList.h"
 # include "MatchingUeCondPerSubItem.h"
 # include "MatchingUEidPerSubItem.h"
@@ -44,6 +49,28 @@
 # include "TestCondInfo.h"
 # include "GranularityPeriod.h"
 # include "UEID.h"
+
+# include "GlobalGNB-ID.h"
+# include "GlobalNgENB-ID.h"
+# include "GlobalNGRANNodeID.h"
+# include "MatchingUEidItem.h"
+# include "MeasurementCondUEidItem.h"
+# include "MeasurementDataItem.h"
+# include "MeasurementInfo-Action-Item.h"
+# include "MeasurementRecordItem.h"
+# include "RIC-EventTriggerStyle-Item.h"
+# include "RIC-ReportStyle-Item.h"
+# include "S-NSSAI.h"
+# include "UEID-GNB-CU-CP-E1AP-ID-Item.h"
+# include "UEID-GNB-CU-CP-E1AP-ID-List.h"
+# include "UEID-GNB-CU-CP-F1AP-ID-Item.h"
+# include "UEID-GNB-CU-F1AP-ID-List.h"
+# include "UEID-GNB-CU-UP.h"
+# include "UEID-GNB-DU.h"
+# include "UEID-GNB.h"
+# include "UEMeasurementReportItem.h"
+
+
 
 #ifdef __cplusplus
 extern "C" {

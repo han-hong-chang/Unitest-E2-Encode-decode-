@@ -135,7 +135,7 @@ func TestE2smActionDefinitionFormat3Encode(t *testing.T) {
 }
 
 func TestE2smIndicationHeaderDecoding(t *testing.T) {
-	Payload := []byte{14, 231, 27, 162, 171, 0, 0, 7, 68, 85, 32, 49, 58, 49, 0, 24, 68, 85, 0, 30, 86, 105, 97, 118, 105, 32, 82, 73, 67, 32, 84, 101, 115, 116, 0}
+	Payload := []byte{14, 231, 27, 163, 51, 0, 0, 6, 68, 85, 32, 49, 58, 49, 16, 68, 85, 28, 86, 105, 97, 118, 105, 32, 82, 73, 67, 32, 84, 101, 115, 116}
 	e2sm := &E2sm{}
 
 	fmt.Println("Length of payload = ", len(Payload))
