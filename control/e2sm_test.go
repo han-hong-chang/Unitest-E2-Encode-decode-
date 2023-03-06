@@ -67,7 +67,7 @@ func TestE2smActionDefinitionFormat1Encode(t *testing.T) {
 		granulPeriod: 1,
 		cellGlobalID: &CGI{
 			pLMNIdentity: "001F01",
-			CellIdentity: "000100100011010001011100000000000001",
+			CellIdentity: "000100100011010001010110000000000001",
 			NodebType:    2,
 		},
 	}
@@ -103,7 +103,7 @@ func TestE2smActionDefinitionFormat3Encode(t *testing.T) {
 		granulPeriod: 1,
 		cellGlobalID: &CGI{
 			pLMNIdentity: "001F01",
-			CellIdentity: "000100100011010001011100000000000001",
+			CellIdentity: "000100100011010001010110000000000001",
 			NodebType:    2},
 	}
 
@@ -232,7 +232,7 @@ func TestDecodeRANFunctionDefinitionForVIAVI_RIC_Testv1_5(t *testing.T) {
 func Test_GenerateActionDefinitionFormat1EncodedByteForVIAVI_RIC_Testv1_5(t *testing.T) {
 	//Configuration
 	PLMNId := "001F01"
-	NrCellId := "000100100011010001011100000000000001"
+	NrCellId := "000100100011010001010110000000000001"
 
 	measLabelList := []string{"NR-CGI", "NR-PCI", "GNB-DU-ID", "DRB.UEThpDl", "DRB.UEThpUl", "QosFlow.PdcpPduVolumeUl", "QosFlow.PdcpPduVolumeDl", "RRC.ConnMean", "RRC.ConnMax", "RRC.InactiveConnMean", "RRC.InactiveConnMax", "RRU.PrbAvailDl",
 		"RRU.PrbAvailUl", "RRU.PrbUsedDl", "RRU.PrbUsedUl", "TB.TotNbrDlInitial.Qpsk", "TB.TotNbrDlInitial.16Qam", "TB.TotNbrDlInitial.64Qam", "TB.TotNbrDlInitial.256Qam", "TB.IntialErrNbrDl", "TB.IntialErrNbrDl.Qpsk",
@@ -284,7 +284,7 @@ func Test_GenerateActionDefinitionFormat1EncodedByteForVIAVI_RIC_Testv1_5(t *tes
 func Test_GenerateActionDefinitionFormat3EncodedByteForVIAVI_RIC_Testv1_5(t *testing.T) {
 	//Configuration
 	PLMNId := "001F01"
-	NrCellId := "000100100011010001011100000000000001"
+	NrCellId := "000100100011010001010110000000000001"
 
 	measLabelList := []string{"Viavi.UE.id", "Viavi.Cell.id", "Viavi.Slice.id", "DRB.UEThpDl", "DRB.UEThpUl", "RRU.PrbUsedDl", "RRU.PrbUsedUl", "RF.serving.id", "RF.serving.RSRP", "RF.serving.RSRQ",
 		"RF.serving.RSSINR", "RF.nb1.id", "RF.nb1.RSRP", "RF.nb1.RSRQ", "RF.nb1.RSSINR", "RF.nb2.id", "RF.nb2.RSRP", "RF.nb2.RSRQ", "RF.nb2.RSSINR", "RF.nb3.id", "RF.nb3.RSRP", "RF.nb3.RSRQ",
@@ -304,6 +304,118 @@ func Test_GenerateActionDefinitionFormat3EncodedByteForVIAVI_RIC_Testv1_5(t *tes
 		},
 	}
 	Buffer := make([]byte, 1500)
+
+	for i := 0; i < len(measLabelList); i++ {
+		measName := PrintableString{
+			Buf:  []byte(measLabelList[i]),
+			Size: len(measLabelList[i]),
+		}
+		measCondItem := MeasurementCondItem{
+			measType:     measName,
+			matchingCond: []MatchingCondItem{},
+		}
+
+		ActionDefinitionFmt3.measCondList = append(ActionDefinitionFmt3.measCondList, measCondItem)
+	}
+
+	e2sm := &E2sm{}
+
+	NewBuffer, err := e2sm.ActionDefinitionFormat3Encode(Buffer, ActionDefinitionFmt3)
+	if err != nil {
+		t.Error("Failed to Encode ActionDefinition, err = ", err)
+	} else {
+		fmt.Println("==== ASN.1 Encoded Byte =====")
+		fmt.Println(fmt.Sprintf("%x", NewBuffer))
+
+		fmt.Println("==== Convert to int64 =====")
+		fmt.Println(fmt.Sprintf("%d", ByteSlice2Int64Slice(NewBuffer)))
+
+		fmt.Println("==== Add dot between 2 Numbers =====")
+		fmt.Println(AddDotBetween2Number(fmt.Sprintf("%d", ByteSlice2Int64Slice(NewBuffer))))
+	}
+
+}
+
+func Test_GenerateActionDefinitionFormat1EncodedByteForVIAVI_RIC_Testv1_5_ScenarioGenerator(t *testing.T) {
+	//Configuration
+	PLMNId := "001F01"
+	NrCellId := "000100100011010001010110000000000001"
+
+	measLabelList := []string{"DRB.UEThpDl", "DRB.UEThpUl", "PEE.AvgPower", "PEE.Energy", "QosFlow.TotPdcpPduVolumeDl",
+		"QosFlow.TotPdcpPduVolumeUl", "RRC.ConnMax", "RRC.ConnMean", "RRU.PrbAvailDl", "RRU.PrbAvailUl", "RRU.PrbTotDl",
+		"RRU.PrbTotUl", "RRU.PrbUsedDl", "RRU.PrbUsedUl", "Viavi.Geo.x", "Viavi.Geo.y", "Viavi.Geo.z", "Viavi.GnbDuId",
+		"Viavi.NrCgi", "Viavi.NrPci", "Viavi.Radio.antennaType", "Viavi.Radio.azimuth", "Viavi.Radio.power"}
+
+	ActionDefinitionFmt1 := E2SM_KPM_ActionDefinition_Format1{
+		measInfoList: []MeasurementInfoItem{},
+		granulPeriod: 1,
+		cellGlobalID: &CGI{
+			pLMNIdentity: PLMNId,
+			CellIdentity: NrCellId,
+			NodebType:    2,
+		},
+	}
+	Buffer := make([]byte, 1500)
+
+	for i := 0; i < len(measLabelList); i++ {
+		measName := PrintableString{
+			Buf:  []byte(measLabelList[i]),
+			Size: len(measLabelList[i]),
+		}
+		measInfoItem := MeasurementInfoItem{
+			measType:      measName,
+			labelInfoList: []LabelInfoItem{},
+		}
+		ActionDefinitionFmt1.measInfoList = append(ActionDefinitionFmt1.measInfoList, measInfoItem)
+	}
+
+	e2sm := &E2sm{}
+
+	NewBuffer, err := e2sm.ActionDefinitionFormat1Encode(Buffer, ActionDefinitionFmt1)
+	if err != nil {
+		t.Error("Failed to Encode ActionDefinition, err = ", err)
+	} else {
+		fmt.Println("==== ASN.1 Encoded Byte =====")
+		fmt.Println(fmt.Sprintf("%x", NewBuffer))
+
+		fmt.Println("==== Convert to int64 =====")
+		fmt.Println(fmt.Sprintf("%d", ByteSlice2Int64Slice(NewBuffer)))
+
+		fmt.Println("==== Add dot between 2 Numbers =====")
+		fmt.Println(AddDotBetween2Number(fmt.Sprintf("%d", ByteSlice2Int64Slice(NewBuffer))))
+	}
+
+}
+
+func Test_GenerateActionDefinitionFormat3EncodedByteForVIAVI_RIC_Testv1_5_ScenarioGenerator(t *testing.T) {
+	//Configuration
+	PLMNId := "001F01"
+	NrCellId := "000100100011010001010110000000000001"
+
+	measLabelList := []string{"DRB.UECqiDl", "DRB.UECqiDl.PCC", "DRB.UECqiDl.SCC", "DRB.UECqiUl", "DRB.UECqiUl.PCC", "DRB.UECqiUl.SCC", "DRB.UEThpDl",
+		"DRB.UEThpDl.PCC", "DRB.UEThpDl.SCC", "DRB.UEThpUl", "DRB.UEThpUl.PCC", "DRB.UEThpUl.SCC", "QosFlow.TotPdcpPduVolumeDl",
+		"RRU.PrbUsedDl", "RRU.PrbUsedDl.PCC", "RRU.PrbUsedDl.SCC", "RRU.PrbUsedUl", "RRU.PrbUsedUl.PCC", "RRU.PrbUsedUl.SCC",
+		"TB.TotNbrDl", "TB.TotNbrDl.PCC", "TB.TotNbrDl.SCC", "TB.TotNbrUl", "TB.TotNbrUl.PCC", "TB.TotNbrUl.SCC",
+		"Viavi.Cell.id", "Viavi.Geo.x", "Viavi.Geo.y", "Viavi.Geo.z", "Viavi.Nb1.RsSinr", "Viavi.Nb1.Rsrp", "Viavi.Nb1.Rsrq",
+		"Viavi.Nb1.id", "Viavi.Nb2.RsSinr", "Viavi.Nb2.Rsrp", "Viavi.Nb2.Rsrq", "Viavi.Nb2.id", "Viavi.QoS.5qi",
+		"Viavi.QoS.CarrierGfbr.PCC", "Viavi.QoS.CarrierGfbr.SCC", "Viavi.QoS.CarrierTput.PCC", "Viavi.QoS.CarrierTput.SCC",
+		"Viavi.QoS.CellId", "Viavi.QoS.DrbId", "Viavi.QoS.Gfbr", "Viavi.QoS.Mfbr", "Viavi.QoS.Priority", "Viavi.QoS.SecCellId",
+		"Viavi.QoS.SliceId", "Viavi.QoS.TargetTput", "Viavi.QoS.UeRnti", "Viavi.Slice.id", "Viavi.UE.BeamId", "Viavi.UE.BeamId.PCC",
+		"Viavi.UE.BeamId.SCC", "Viavi.UE.FrameCnt", "Viavi.UE.FrameCnt.PCC", "Viavi.UE.FrameCnt.SCC",
+		"Viavi.UE.RsSinr", "Viavi.UE.RsSinr.PCC", "Viavi.UE.RsSinr.SCC, Viavi.UE.Rsrp, Viavi.UE.Rsrp.PCC, Viavi.UE.Rsrp.SCC",
+		"Viavi.UE.Rsrq", "Viavi.UE.Rsrq.PCC", "Viavi.UE.Rsrq.SCC", "Viavi.UE.anomalies", "Viavi.UE.id", "Viavi.UE.servingDistance",
+		"Viavi.UE.speed", "Viavi.UE.targetThroughputDl", "Viavi.UE.targetThroughputUl"}
+
+	ActionDefinitionFmt3 := E2SM_KPM_ActionDefinition_Format3{
+		measCondList: []MeasurementCondItem{},
+		granulPeriod: 1,
+		cellGlobalID: &CGI{
+			pLMNIdentity: PLMNId,
+			CellIdentity: NrCellId,
+			NodebType:    2,
+		},
+	}
+	Buffer := make([]byte, 3000)
 
 	for i := 0; i < len(measLabelList); i++ {
 		measName := PrintableString{
