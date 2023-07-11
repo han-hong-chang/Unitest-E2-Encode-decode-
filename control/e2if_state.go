@@ -198,6 +198,7 @@ func (e *E2IfState) GetRanFunctionDefinitionByOid(NbId string) (int64, *E2SM_KPM
 				return int64(RANFunction.RanFunctionId), RanFunDef
 			} else {
 				xapp.Logger.Debug("NodeB Id %s, RanFunction Id = %d, E2SM OID doesn't match, expected is %s, have %s", NbId, RANFunction.RanFunctionId, E2smKPMv2OId, err)
+				xapp.Logger.Debug("NodeB Id %s, RanFunction Id = %d, E2SM OID is %s", NbId, RANFunction.RanFunctionId, RanFunDef.ranFunction_Name.ranFunction_E2SM_OID.Buf)
 			}
 		}
 

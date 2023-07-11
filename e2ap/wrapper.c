@@ -120,22 +120,23 @@ void Free_RIC_Indication(RICIndication* RicIndication){
     if(RicIndication == NULL) {
         return;
     }
+    else{
+        if(RicIndication->IndicationHeader != NULL) {
+            free(RicIndication->IndicationHeader);
+            RicIndication->IndicationHeader = NULL;
+        }
 
-    if(RicIndication->IndicationHeader != NULL) {
-        free(RicIndication->IndicationHeader);
-        RicIndication->IndicationHeader = NULL;
-    }
+        if(RicIndication->IndicationMessage != NULL) {
+            free(RicIndication->IndicationMessage);
+            RicIndication->IndicationMessage = NULL;
+        }
 
-    if(RicIndication->IndicationMessage != NULL) {
-        free(RicIndication->IndicationMessage);
-        RicIndication->IndicationMessage = NULL;
-    }
-
-    if(RicIndication->CallProcessID != NULL) {
-        free(RicIndication->CallProcessID);
-        RicIndication->CallProcessID = NULL;
+        if(RicIndication->CallProcessID != NULL) {
+            //free(RicIndication->CallProcessID);
+            RicIndication->CallProcessID = NULL;
+        }
+        free(RicIndication);
+        RicIndication = NULL;
     }
     
-    free(RicIndication);
-    RicIndication = NULL;
 }

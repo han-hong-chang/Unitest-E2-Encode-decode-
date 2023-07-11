@@ -8,7 +8,15 @@ RUN wget --content-disposition https://packagecloud.io/o-ran-sc/release/packages
 RUN wget --content-disposition https://packagecloud.io/o-ran-sc/release/packages/debian/stretch/rmr-dev_${RMRVERSION}_amd64.deb/download.deb && dpkg -i rmr-dev_${RMRVERSION}_amd64.deb && rm -rf rmr-dev_${RMRVERSION}_amd64.deb
 
 WORKDIR /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm
-COPY . /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm
+
+
+COPY e2ap /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/e2ap
+COPY e2sm /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/e2sm
+COPY cmd /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/cmd
+# COPY config /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/config
+COPY go.mod /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/
+COPY go.sum /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/
+
 
 # Compile E2AP
 RUN cd e2ap && \
@@ -35,6 +43,8 @@ WORKDIR /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm
 RUN go version
 ENV GO111MODULE=on GO_ENABLED=0 GOOS=linux
 
+COPY control /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/control
+
 RUN go mod tidy
 
 RUN go build -a -installsuffix cgo -o kpm-app ./cmd/kpm.go
@@ -48,7 +58,7 @@ ENV RMR_SEED_RT=config/uta_rtg.rt
 RUN mkdir /config
 
 COPY --from=kpm-build /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/kpm-app /
-COPY --from=kpm-build /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/config/* /config/
+# COPY --from=kpm-build /go/src/gerrit.o-ran-sc.org/r/scp/ric-app/kpm/config/* /config/
 COPY --from=kpm-build /usr/local/lib /usr/local/lib
 COPY --from=kpm-build /usr/local/include/e2ap/*.h /usr/local/include/e2ap/
 COPY --from=kpm-build /usr/local/include/e2sm/*.h /usr/local/include/e2sm/

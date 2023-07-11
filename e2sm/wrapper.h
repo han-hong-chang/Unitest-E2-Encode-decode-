@@ -47,6 +47,7 @@
 # include "EUTRA-CGI.h"
 
 # include "TestCondInfo.h"
+# include "TestCond-Value.h"
 # include "GranularityPeriod.h"
 # include "UEID.h"
 
@@ -104,6 +105,10 @@ E2SM_KPM_IndicationMessage_t *Decode_Indication_Message(void *Buffer, size_t Buf
 void Free_Indication_Message(E2SM_KPM_IndicationMessage_t *Indication_Message);
 
 ssize_t Encode_Indication_Header(void *Buffer, size_t Buf_Size, E2SM_KPM_IndicationHeader_t* IndicationHeader, int AsnPrint_Flag);
+
+uint8_t fillBitString(BIT_STRING_t *id, uint8_t unusedBits, uint8_t byteSize, uint64_t data);
+ssize_t Encode_Action_Definition_Format_1_in_C(void *Buffer, size_t Buf_Size, void *measName, void *measNameLen, size_t sizeOfMeasName);
+ssize_t Encode_Action_Definition_Format_3_in_C(void *Buffer, size_t Buf_Size, void *measName, void *measNameLen, size_t sizeOfMeasName);
 
 #ifdef __cplusplus
 }

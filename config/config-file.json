@@ -1,14 +1,14 @@
 {
 
     "name": "kpm",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "containers": [
         {
             "name": "kpm",
             "image": {
                 "registry": "docker.io",
-                "name": "mooncake22/kpm",
-                "tag": "0.0.1"
+                "name": "mb8746/kpm",
+                "tag": "1.0.0"
             }
         }
     ],

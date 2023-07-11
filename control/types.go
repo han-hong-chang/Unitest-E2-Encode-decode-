@@ -164,6 +164,72 @@ type MeasurementCondUEidItem struct {
 	matchingUEidList *[]MatchingUEidItem /* OPTIONAL */
 }
 
+// Influx DB Structure
+
+type Timestamp struct {
+	TVsec  int64 `json:"tv_sec"`
+	TVnsec int64 `json:"tv_nsec"`
+}
+
+/*
+type CellMetricsEntry struct {
+	MeasTimestampPDCPBytes Timestamp `json:"MeasTimestampPDCPBytes"`
+	CellID 		       string 	 `json:"CellID"`
+	PDCPBytesDL            int64     `json:"PDCPBytesDL"`
+	PDCPBytesUL            int64     `json:"PDCPBytesUL"`
+	MeasTimestampPRB       Timestamp `json:"MeasTimestampAvailPRB"`
+	AvailPRBDL             int64     `json:"AvailPRBDL"`
+	AvailPRBUL             int64     `json:"AvailPRBUL"`
+	MeasPeriodPDCP	       int64	 `json:"MeasPeriodPDCPBytes"`
+	MeasPeriodPRB	       int64	 `json:"MeasPeriodAvailPRB"`
+}
+*/
+
+type CellRFType struct {
+	RSRP   int `json:"rsrp"`
+	RSRQ   int `json:"rsrq"`
+	RSSINR int `json:"rssinr"`
+}
+
+type NeighborCellRFType struct {
+	CellID string     `json:"CID"`
+	CellRF CellRFType `json:"CellRF"`
+}
+
+/*
+type UeMetricsEntry struct {
+	UeID                   int64     `json:"UEID"`
+	ServingCellID          string    `json:"ServingCellID"`
+	MeasTimestampPDCPBytes Timestamp `json:"MeasTimestampUEPDCPBytes"`
+	PDCPBytesDL            int64     `json:"UEPDCPBytesDL"`
+	PDCPBytesUL            int64     `json:"UEPDCPBytesUL"`
+	MeasTimestampPRB       Timestamp `json:"MeasTimestampUEPRBUsage"`
+	PRBUsageDL             int64     `json:"UEPRBUsageDL"`
+	PRBUsageUL             int64     `json:"UEPRBUsageUL"`
+	MeasTimeRF             Timestamp `json:"MeasTimestampRF"`
+	MeasPeriodRF	       int64	 `json:"MeasPeriodRF"`
+	MeasPeriodPDCP	       int64	 `json:"MeasPeriodUEPDCPBytes"`
+	MeasPeriodPRB	       int64	 `json:"MeasPeriodUEPRBUsage"`
+	ServingCellRF   CellRFType           `json:"ServingCellRF"`
+	NeighborCellsRF []NeighborCellRFType `json:"NeighborCellRF"`
+}
+*/
+
+type CellMetricsEntry struct {
+	RanName        string  `json:"RanName"`
+	DRB_UEThpDl    int     `json:"DRB.UEThpDl"`
+	RRU_PrbUsedDl  int     `json:"RRU.PrbUsedDl"`
+	RRU_PrbAvailDl int     `json:"RRU.PrbAvailDl"`
+	RRU_PrbTotDl   float64 `json:"RRU.PrbTotDl"`
+}
+
+type SliceMetricsEntry struct {
+	RanName       string `json:"RanName"`
+	SliceID       string `json:"SliceID"`
+	DRB_UEThpDl   int    `json:"DRB.UEThpDl.SNSSAI"`
+	RRU_PrbUsedDl int    `json:"RRU.PrbUsedDl.SNSSAI"`
+}
+
 //type MatchingUEidList []MatchingUEidItem
 
 type MatchingUEidItem struct {

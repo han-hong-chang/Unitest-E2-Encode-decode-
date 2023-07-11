@@ -402,7 +402,7 @@ func Test_GenerateActionDefinitionFormat3EncodedByteForVIAVI_RIC_Testv1_5_Scenar
 		"Viavi.QoS.CellId", "Viavi.QoS.DrbId", "Viavi.QoS.Gfbr", "Viavi.QoS.Mfbr", "Viavi.QoS.Priority", "Viavi.QoS.SecCellId",
 		"Viavi.QoS.SliceId", "Viavi.QoS.TargetTput", "Viavi.QoS.UeRnti", "Viavi.Slice.id", "Viavi.UE.BeamId", "Viavi.UE.BeamId.PCC",
 		"Viavi.UE.BeamId.SCC", "Viavi.UE.FrameCnt", "Viavi.UE.FrameCnt.PCC", "Viavi.UE.FrameCnt.SCC",
-		"Viavi.UE.RsSinr", "Viavi.UE.RsSinr.PCC", "Viavi.UE.RsSinr.SCC, Viavi.UE.Rsrp, Viavi.UE.Rsrp.PCC, Viavi.UE.Rsrp.SCC",
+		"Viavi.UE.RsSinr", "Viavi.UE.RsSinr.PCC", "Viavi.UE.RsSinr.SCC", "Viavi.UE.Rsrp", "Viavi.UE.Rsrp.PCC", "Viavi.UE.Rsrp.SCC",
 		"Viavi.UE.Rsrq", "Viavi.UE.Rsrq.PCC", "Viavi.UE.Rsrq.SCC", "Viavi.UE.anomalies", "Viavi.UE.id", "Viavi.UE.servingDistance",
 		"Viavi.UE.speed", "Viavi.UE.targetThroughputDl", "Viavi.UE.targetThroughputUl"}
 

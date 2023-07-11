@@ -45,8 +45,10 @@ func (e *E2ap) RICIndicationDecode(Payload []byte) (Indication *RICIndication, e
 	Indication.IndicationMessage = C.GoBytes(IndicationMessage_C, C.int(DecodedIndication.IndicationMessageSize))
 	Indication.IndicationMessageSize = int32(DecodedIndication.IndicationMessageSize)
 
-	CallProcessID_C := unsafe.Pointer(DecodedIndication.CallProcessID)
-	Indication.CallProcessID = C.GoBytes(CallProcessID_C, C.int(DecodedIndication.CallProcessIDSize))
-	Indication.CallProcessIDSize = int32(DecodedIndication.CallProcessIDSize)
+	/*
+		CallProcessID_C := unsafe.Pointer(DecodedIndication.CallProcessID)
+		Indication.CallProcessID = C.GoBytes(CallProcessID_C, C.int(DecodedIndication.CallProcessIDSize))
+		Indication.CallProcessIDSize = int32(DecodedIndication.CallProcessIDSize)
+	*/
 	return
 }

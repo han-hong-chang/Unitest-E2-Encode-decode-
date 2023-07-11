@@ -11,6 +11,8 @@ import (
 	"errors"
 	"strconv"
 	"unsafe"
+
+	xapp "gerrit.o-ran-sc.org/r/ric-plt/xapp-frame/pkg/xapp"
 )
 
 const (
@@ -131,6 +133,123 @@ func (e *E2sm) EventTriggerDefinitionEncode(Buffer []byte, Report_Period int64) 
 	return
 }
 
+func FindIntersectionWithOrder(str2 []string, str1 []string) []string { // order in str1
+	uniqueElements := make(map[string]bool)
+
+	// Add elements from str1 to the map/set
+	for _, element := range str1 {
+		uniqueElements[element] = true
+	}
+
+	// Find the intersection of str1 and str2
+	intersection := make([]string, 0)
+	for _, element := range str2 {
+		if uniqueElements[element] {
+			intersection = append(intersection, element)
+		}
+	}
+
+	return intersection
+}
+
+func ConvertByteMatrixToStringSlice(matrix [][]byte) []string {
+	result := make([]string, len(matrix))
+	for i, row := range matrix {
+		result[i] = string(row)
+	}
+	return result
+}
+
+func (e *E2sm) ActionDefinitionFormat1EncodeInC(Buffer []byte, measInfoActionList []MeasurementInfo_Action_Item) (ActionDefinition []byte, err error) {
+	// Prepare for measName in PrintableString, size of measName, plmnID in string, cellID in string, nodebType in int
+
+	sizeOfMeasName := len(measInfoActionList)
+	measNameStr := make([]string, sizeOfMeasName)
+
+	for i, row := range measInfoActionList {
+		measNameStr[i] = string(row.measName.Buf)
+	}
+
+	subStr := FindIntersectionWithOrder(cellMetricsInfo, measNameStr)
+	cellSubMetrics = subStr
+
+	xapp.Logger.Debug("cell Metrics Info = %v", cellMetricsInfo)
+	xapp.Logger.Debug("Measurement Name String = %v", measNameStr)
+	xapp.Logger.Debug("Sub string = %v", subStr)
+
+	subName := make([][30]byte, len(subStr))
+	subNameLen := make([]int32, len(subStr))
+
+	if len(subStr) == 0 {
+		return make([]byte, 0), errors.New("Match subscription measurement name is empty")
+	}
+
+	for i, str := range subStr {
+		byteArray := [30]byte{}
+		copy(byteArray[:], str)
+		subName[i] = byteArray
+		subNameLen[i] = int32(len(str))
+
+	}
+
+	cptr := unsafe.Pointer(&Buffer[0])
+	subName_cptr := unsafe.Pointer(&subName[0])
+	subNameLen_cptr := unsafe.Pointer(&subNameLen[0])
+
+	Size := C.Encode_Action_Definition_Format_1_in_C(cptr, C.size_t(len(Buffer)), subName_cptr, subNameLen_cptr, C.size_t(len(subStr)))
+	if Size < 0 {
+		return make([]byte, 0), errors.New("e2sm wrapper is unable to ActionDefinitionFormat1EncodeInC() due to wrong or invalid input")
+	}
+	ActionDefinition = C.GoBytes(cptr, (C.int(Size)+7)/8)
+
+	return
+}
+
+func (e *E2sm) ActionDefinitionFormat3EncodeInC(Buffer []byte, measInfoActionList []MeasurementInfo_Action_Item) (ActionDefinition []byte, err error) {
+	// Prepare for measName in PrintableString, size of measName, plmnID in string, cellID in string, nodebType in int
+
+	sizeOfMeasName := len(measInfoActionList)
+	measNameStr := make([]string, sizeOfMeasName)
+
+	for i, row := range measInfoActionList {
+		measNameStr[i] = string(row.measName.Buf)
+	}
+
+	subStr := FindIntersectionWithOrder(sliceMetricsInfo, measNameStr)
+	sliceSubMetrics = subStr
+
+	xapp.Logger.Debug("Slice Metrics Info = %v", sliceMetricsInfo)
+	xapp.Logger.Debug("Measurement Name String = %v", measNameStr)
+	xapp.Logger.Debug("Sub string = %v", subStr)
+
+	if len(subStr) == 0 {
+		return make([]byte, 0), errors.New("Match subscription measurement name is empty")
+	}
+
+	subName := make([][25]byte, len(subStr))
+	subNameLen := make([]int32, len(subStr))
+
+
+	for i, str := range subStr {
+		byteArray := [25]byte{}
+		copy(byteArray[:], str)
+		subName[i] = byteArray
+		subNameLen[i] = int32(len(str))
+	}
+
+	cptr := unsafe.Pointer(&Buffer[0])
+	subName_cptr := unsafe.Pointer(&subName[0])
+	subNameLen_cptr := unsafe.Pointer(&subNameLen[0])
+
+	Size := C.Encode_Action_Definition_Format_3_in_C(cptr, C.size_t(len(Buffer)), subName_cptr, subNameLen_cptr, C.size_t(len(subStr)))
+	if Size < 0 {
+		return make([]byte, 0), errors.New("e2sm wrapper is unable to ActionDefinitionFormat3EncodeInC() due to wrong or invalid input")
+	}
+	ActionDefinition = C.GoBytes(cptr, (C.int(Size)+7)/8)
+
+	return
+}
+
 func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1) (newBuffer []byte, err error) {
 
 	Length := len(ActionDefinitionFmt1.measInfoList)
@@ -142,7 +261,7 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 		LabelInfoItem := (*C.LabelInfoItem_t)(C.malloc(C.sizeof_LabelInfoItem_t))
 		defer C.free(unsafe.Pointer(LabelInfoItem))
 
-		True := (*C.int)(C.malloc(C.sizeof_int))
+		True := (*C.long)(C.malloc(C.sizeof_long))
 		defer C.free(unsafe.Pointer(True))
 		*True = 0
 
@@ -253,6 +372,22 @@ func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1
 		}
 
 	}
+
+	/*
+			xapp.Logger.Debug("Print Action Definition Format 1")
+			xapp.Logger.Debug("Granul Period = %d", ActionDefinition_Format1.granulPeriod);
+			for i := 0; i < len(ActionDefinition_Format1.measInfoList); i++ {
+				switch ActionDefinition_Format1.measInfoList[i].measType.(type){
+				case PrintableString:
+					xapp.Logger.Debug("Measurement %d: %s", i, ActionDefinition_Format1.granulPeriod.measType.(PrintableString).Buf);
+		 		case int64:
+					xapp.Logger.Debug("Measurement %d: ID = %d", i, ActionDefinition_Format1.granulPeriod.measType.(int64));
+				default:
+					xapp.Logger.Debug("Measurement %d: Wrong Type", i);
+
+				}
+			}
+	*/
 
 	ActionDefinition_Format1 := C.Pack_ActionDefinition_Format1(MeasurementInfoList, C.ulong(ActionDefinitionFmt1.granulPeriod), CGI)
 	if ActionDefinition_Format1 == nil {
@@ -507,11 +642,13 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 				MeasurementRecordType := int32(MeasurementRecordItem_C.present)
 				switch MeasurementRecordType {
 				case 1:
-					integer := uint64(MeasurementRecordItem_C.choice[0])
-					measRecordItem = integer
+					var cast_integer *C.long = (*C.long)(unsafe.Pointer(&MeasurementRecordItem_C.choice[0]))
+					measRecordItem = uint64(*cast_integer)
+					// xapp.Logger.Debug("Indication Message integer = %v", measRecordItem)
 				case 2:
-					real := float64(MeasurementRecordItem_C.choice[1])
-					measRecordItem = real
+					var cast_real *C.double = (*C.double)(unsafe.Pointer(&MeasurementRecordItem_C.choice[0]))
+					measRecordItem = float64(*cast_real)
+					// xapp.Logger.Debug("Indication Message float = %v", measRecordItem)
 				case 3:
 					noValue := int32(MeasurementRecordItem_C.choice[2])
 					measRecordItem = noValue
@@ -699,6 +836,8 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 		IndiMsgFmt2.measData = []MeasurementDataItem{}
 		measDataItem := MeasurementDataItem{}
 
+		// xapp.Logger.Info("Handle MeasurementData")
+
 		// Iteratively parse each item to list with i
 		for i := 0; i < int(E2SM_KPM_IndicationMessage_Format2_C.measData.list.count); i++ {
 			var sizeof_MeasurementDataItem_t *C.MeasurementDataItem_t
@@ -721,11 +860,13 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 				MeasurementRecordType := int32(MeasurementRecordItem_C.present)
 				switch MeasurementRecordType {
 				case 1:
-					integer := uint64(MeasurementRecordItem_C.choice[0])
-					measRecordItem = integer
+					var cast_integer *C.long = (*C.long)(unsafe.Pointer(&MeasurementRecordItem_C.choice[0]))
+					measRecordItem = uint64(*cast_integer)
+					// xapp.Logger.Debug("Indication Message integer = %v", measRecordItem)
 				case 2:
-					real := float64(MeasurementRecordItem_C.choice[1])
-					measRecordItem = real
+					var cast_real *C.double = (*C.double)(unsafe.Pointer(&MeasurementRecordItem_C.choice[0]))
+					measRecordItem = float64(*cast_real)
+					// xapp.Logger.Debug("Indication Message float = %v", measRecordItem)
 				case 3:
 					noValue := int32(MeasurementRecordItem_C.choice[2])
 					measRecordItem = noValue
@@ -741,6 +882,8 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 		// Handle measCondUEidList
 		IndiMsgFmt2.measCondUEidList = []MeasurementCondUEidItem{}
 		measCondUEidItem := MeasurementCondUEidItem{}
+
+		xapp.Logger.Info("Handle measCondUEidList")
 
 		// Iteratively parse each item to list with i
 		for i := 0; i < int(E2SM_KPM_IndicationMessage_Format2_C.measCondUEidList.list.count); i++ {
@@ -774,13 +917,17 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 				MatchingCondItem_C := *(**C.MatchingCondItem_t)(unsafe.Pointer(uintptr(unsafe.Pointer(MeasurementCondUEidItem_C.matchingCond.list.array)) + (uintptr)(j)*unsafe.Sizeof(sizeof_MatchingCondItem_t)))
 
 				matchingCondItemType := int32(MatchingCondItem_C.present)
+				// xapp.Logger.Info("Handle MatchingCondItem Type %d !", matchingCondItemType)
+
 				switch matchingCondItemType {
 				case 1:
 					measLabel := MeasurementLabel{}
-
-					measLabel_C := (*C.MeasurementLabel_t)(unsafe.Pointer(&MatchingCondItem_C.choice[0]))
+					// *MatchingCondItem_C.matchingCondChoice.choice[0]
+					measLabel_C := *(**C.MeasurementLabel_t)(unsafe.Pointer(&MatchingCondItem_C.choice[0]))
+					// measLabel_C := (*C.MeasurementLabel_t)(unsafe.Pointer(&MatchingCondItem_C.matchingCondChoice.choice[0]))
 
 					if measLabel_C.noLabel != nil {
+
 						noLabel := int64(*measLabel_C.noLabel)
 						measLabel.noLabel = &noLabel
 					}
@@ -788,7 +935,7 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 					if measLabel_C.plmnID != nil {
 						plmnID := OctetString{}
 
-						plmnID_C := (*C.PLMNIdentity_t)(unsafe.Pointer(&measLabel_C.plmnID))
+						plmnID_C := *(*C.PLMNIdentity_t)(unsafe.Pointer(measLabel_C.plmnID))
 
 						plmnID.Buf = C.GoBytes(unsafe.Pointer(plmnID_C.buf), C.int(plmnID_C.size))
 						plmnID.Size = int(plmnID_C.size)
@@ -797,10 +944,12 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 					}
 
 					if measLabel_C.sliceID != nil {
+						snssai := S_NSSAI{}
 
-						sliceID_C := (*C.S_NSSAI_t)(unsafe.Pointer(measLabel_C.sliceID))
-						measLabel.sliceID.sST.Buf = C.GoBytes(unsafe.Pointer(sliceID_C.sST.buf), C.int(sliceID_C.sST.size))
-						measLabel.sliceID.sST.Size = int(sliceID_C.sST.size)
+						sliceID_C := *(*C.S_NSSAI_t)(unsafe.Pointer(measLabel_C.sliceID))
+
+						snssai.sST.Buf = C.GoBytes(unsafe.Pointer(sliceID_C.sST.buf), C.int(sliceID_C.sST.size))
+						snssai.sST.Size = int(sliceID_C.sST.size)
 
 						if sliceID_C.sD != nil {
 							sD := OctetString{}
@@ -808,8 +957,10 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 							sD.Buf = C.GoBytes(unsafe.Pointer(sliceID_C.sD.buf), C.int(sliceID_C.sD.size))
 							sD.Size = int(sliceID_C.sD.size)
 
-							measLabel.sliceID.sD = &sD
+							snssai.sD = &sD
 						}
+
+						measLabel.sliceID = &snssai
 					}
 
 					if measLabel_C.fiveQI != nil {
@@ -925,20 +1076,25 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 					default:
 					}
 
-					testCondInfo.testExpr = int64(testCondInfo_C.testExpr)
+					testCondInfo.testExpr = int64(*testCondInfo_C.testExpr)
 
-					testValueType := int32(testCondInfo_C.testValue.present)
+					testValue_C := (*C.TestCond_Value_t)(unsafe.Pointer(testCondInfo_C.testValue))
+
+					testValueType := int32(testValue_C.present)
 					switch testValueType {
 					case 1:
-						testCondInfo.testValue = int64(testCondInfo_C.testValue.choice[0])
+						// testCondInfo.testValue = int64(*(testCondInfo_C.testValue).choice[0])
+						testCondInfo.testValue = int64((*testValue_C).choice[0])
 					case 2:
-						testCondInfo.testValue = int64(testCondInfo_C.testValue.choice[1])
+						// testCondInfo.testValue = int64(*(testCondInfo_C.testValue).choice[1])
+						testCondInfo.testValue = int64((*testValue_C).choice[1])
 					case 3:
-						testCondInfo.testValue = int32(testCondInfo_C.testValue.choice[2])
+						// testCondInfo.testValue = int32(*(testCondInfo_C.testValue).choice[2])
+						testCondInfo.testValue = int32((*testValue_C).choice[2])
 					case 4:
 						valueBitS := BitString{}
 
-						valueBitS_C := (*C.BIT_STRING_t)(unsafe.Pointer(&testCondInfo_C.testValue.choice[0]))
+						valueBitS_C := (*C.BIT_STRING_t)(unsafe.Pointer(&testValue_C.choice[0]))
 
 						valueBitS.Buf = C.GoBytes(unsafe.Pointer(valueBitS_C.buf), C.int(valueBitS_C.size))
 						valueBitS.Size = int(valueBitS_C.size)
@@ -948,7 +1104,7 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 					case 5:
 						valueOctS := OctetString{}
 
-						valueOctS_C := (*C.OCTET_STRING_t)(unsafe.Pointer(&testCondInfo_C.testValue.choice[0]))
+						valueOctS_C := (*C.OCTET_STRING_t)(unsafe.Pointer(&testValue_C.choice[0]))
 
 						valueOctS.Buf = C.GoBytes(unsafe.Pointer(valueOctS_C.buf), C.int(valueOctS_C.size))
 						valueOctS.Size = int(valueOctS_C.size)
@@ -957,7 +1113,7 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 					case 6:
 						valuePrtS := PrintableString{}
 
-						valuePrtS_C := (*C.PrintableString_t)(unsafe.Pointer(&testCondInfo_C.testValue.choice[0]))
+						valuePrtS_C := (*C.PrintableString_t)(unsafe.Pointer(&testValue_C.choice[0]))
 
 						valuePrtS.Buf = C.GoBytes(unsafe.Pointer(valuePrtS_C.buf), C.int(valuePrtS_C.size))
 						valuePrtS.Size = int(valuePrtS_C.size)
@@ -987,6 +1143,8 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 				}
 				measCondUEidItem.matchingUEidList = &matchingUEidList
 			}
+
+			// xapp.Logger.Info("Append the measurement in List")
 
 			IndiMsgFmt2.measCondUEidList = append(IndiMsgFmt2.measCondUEidList, measCondUEidItem)
 		}
