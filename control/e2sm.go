@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	E2smKPMv2OId string = "1.3.6.1.4.1.53148.1.2.2.2" //E2SM-KPMv2 OID
+	E2smKPMv3OId string = "1.3.6.1.4.1.53148.1.3.2.2" //E2SM-KPMv2 OID
 	ASNPrintFlag int    = 1
 )
 
@@ -247,307 +247,6 @@ func (e *E2sm) ActionDefinitionFormat3EncodeInC(Buffer []byte, measInfoActionLis
 	}
 	ActionDefinition = C.GoBytes(cptr, (C.int(Size)+7)/8)
 
-	return
-}
-
-func (e *E2sm) ActionDefinitionFormat1Encode(Buffer []byte, ActionDefinitionFmt1 E2SM_KPM_ActionDefinition_Format1) (newBuffer []byte, err error) {
-
-	Length := len(ActionDefinitionFmt1.measInfoList)
-	Measurement_Information_List := []*C.MeasurementInfoItem_t{}
-	Label_Information_List := []*C.LabelInfoItem_t{}
-
-	for i := 0; i < Length; i++ {
-		//Todo: Currently using default value
-		LabelInfoItem := (*C.LabelInfoItem_t)(C.malloc(C.sizeof_LabelInfoItem_t))
-		defer C.free(unsafe.Pointer(LabelInfoItem))
-
-		True := (*C.long)(C.malloc(C.sizeof_long))
-		defer C.free(unsafe.Pointer(True))
-		*True = 0
-
-		LabelInfoItem.measLabel.noLabel = (*C.long)(unsafe.Pointer(True))
-		LabelInfoItem.measLabel.plmnID = nil
-		LabelInfoItem.measLabel.sliceID = nil
-		LabelInfoItem.measLabel.fiveQI = nil
-		LabelInfoItem.measLabel.qFI = nil
-		LabelInfoItem.measLabel.qCI = nil
-		LabelInfoItem.measLabel.qCImax = nil
-		LabelInfoItem.measLabel.qCImin = nil
-		LabelInfoItem.measLabel.aRPmax = nil
-		LabelInfoItem.measLabel.aRPmin = nil
-		LabelInfoItem.measLabel.bitrateRange = nil
-		LabelInfoItem.measLabel.layerMU_MIMO = nil
-		LabelInfoItem.measLabel.sUM = nil
-		LabelInfoItem.measLabel.distBinX = nil
-		LabelInfoItem.measLabel.distBinY = nil
-		LabelInfoItem.measLabel.distBinZ = nil
-		LabelInfoItem.measLabel.preLabelOverride = nil
-		LabelInfoItem.measLabel.startEndInd = nil
-		LabelInfoItem.measLabel.min = nil
-		LabelInfoItem.measLabel.max = nil
-		LabelInfoItem.measLabel.avg = nil
-
-		Label_Information_List = append(Label_Information_List, LabelInfoItem)
-
-		switch ActionDefinitionFmt1.measInfoList[i].measType.(type) {
-		case PrintableString:
-			//Using C to allocate memory for C structure
-			measName := (*C.MeasurementTypeName_t)(C.malloc(C.sizeof_MeasurementTypeName_t))
-			defer C.free(unsafe.Pointer(measName))
-
-			measName.buf = (*C.uchar)(C.CBytes(ActionDefinitionFmt1.measInfoList[i].measType.(PrintableString).Buf))
-			measName.size = C.size_t(len(ActionDefinitionFmt1.measInfoList[i].measType.(PrintableString).Buf))
-
-			MeasurementInfoItem := C.Pack_Measurement_Information(measName, nil, &Label_Information_List[0], C.size_t(1))
-			if MeasurementInfoItem == nil {
-				C.free(unsafe.Pointer(measName))
-				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Information_Item due to wrong or invalid input")
-			}
-			Measurement_Information_List = append(Measurement_Information_List, MeasurementInfoItem)
-		case int64:
-			//Using C to allocate memory for C structure
-			measID := (*C.MeasurementTypeID_t)(C.malloc(C.sizeof_MeasurementTypeID_t))
-			defer C.free(unsafe.Pointer(measID))
-
-			*measID = C.long(ActionDefinitionFmt1.measInfoList[i].measType.(int64))
-
-			MeasurementInfoItem := C.Pack_Measurement_Information(nil, measID, &Label_Information_List[0], C.size_t(1))
-			if MeasurementInfoItem == nil {
-				C.free(unsafe.Pointer(measID))
-				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Information_Item due to wrong or invalid input")
-			}
-			Measurement_Information_List = append(Measurement_Information_List, MeasurementInfoItem)
-		default:
-		}
-
-	}
-
-	MeasurementInfoList := C.Pack_Measurement_Information_List(&Measurement_Information_List[0], C.size_t(Length))
-	if MeasurementInfoList == nil {
-		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Measurement_Information_List due to wrong or invalid input")
-	}
-
-	// Pack CGI
-	CGI := &C.CGI_t{}
-	CGI = nil // If cellGlobalID == nil, CGI == nil
-
-	if ActionDefinitionFmt1.cellGlobalID != nil {
-		//Parse PLMNId
-		PLMNIdBuf, err := ParsePlmnId(ActionDefinitionFmt1.cellGlobalID.pLMNIdentity)
-		if err != nil {
-			return make([]byte, 0), err
-		}
-
-		PlmnId := (*C.PLMNIdentity_t)(C.malloc(C.sizeof_PLMNIdentity_t))
-		defer C.free(unsafe.Pointer(PlmnId))
-
-		PlmnId.buf = (*C.uchar)(C.CBytes(PLMNIdBuf))
-		PlmnId.size = C.size_t(3) //PLMNId use 3 Octets
-
-		// Parse CellId
-		NrCellId := &C.NRCellIdentity_t{}
-		NrCellId = nil
-		EutraCellId := &C.EUTRACellIdentity_t{}
-		EutraCellId = nil
-
-		if ActionDefinitionFmt1.cellGlobalID.NodebType == 2 {
-
-			NrCellIdBuf, err := ParseCellId(ActionDefinitionFmt1.cellGlobalID.CellIdentity)
-			if err != nil {
-				return make([]byte, 0), err
-			}
-
-			NrCellId = (*C.NRCellIdentity_t)(C.malloc(C.sizeof_NRCellIdentity_t))
-			defer C.free(unsafe.Pointer(NrCellId))
-
-			NrCellId.buf = (*C.uchar)(C.CBytes(NrCellIdBuf))
-			NrCellId.size = C.size_t(5) // Total 5 Bytes = 40 bits, only use 36bits in 5G.
-			NrCellId.bits_unused = C.int(4)
-		} // Todo: add EutraCellId Support
-
-		//Pack into ASN.1 Format
-		CGI = C.Pack_Cell_Global_Id(PlmnId, NrCellId, EutraCellId)
-		if CGI == nil {
-			return make([]byte, 0), errors.New("e2sm wrapper is unable to pack CGI due to wrong or invalid input")
-		}
-
-	}
-
-	/*
-			xapp.Logger.Debug("Print Action Definition Format 1")
-			xapp.Logger.Debug("Granul Period = %d", ActionDefinition_Format1.granulPeriod);
-			for i := 0; i < len(ActionDefinition_Format1.measInfoList); i++ {
-				switch ActionDefinition_Format1.measInfoList[i].measType.(type){
-				case PrintableString:
-					xapp.Logger.Debug("Measurement %d: %s", i, ActionDefinition_Format1.granulPeriod.measType.(PrintableString).Buf);
-		 		case int64:
-					xapp.Logger.Debug("Measurement %d: ID = %d", i, ActionDefinition_Format1.granulPeriod.measType.(int64));
-				default:
-					xapp.Logger.Debug("Measurement %d: Wrong Type", i);
-
-				}
-			}
-	*/
-
-	ActionDefinition_Format1 := C.Pack_ActionDefinition_Format1(MeasurementInfoList, C.ulong(ActionDefinitionFmt1.granulPeriod), CGI)
-	if ActionDefinition_Format1 == nil {
-		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack ActionDefinition_Format1 due to wrong or invalid input")
-	}
-
-	cptr := unsafe.Pointer(&Buffer[0])
-
-	Size := C.Encode_Action_Definition_Format1(cptr, C.size_t(len(Buffer)), ActionDefinition_Format1, C.int(ASNPrintFlag))
-	if Size < 0 {
-		return make([]byte, 0), errors.New("e2sm wrapper is unable to encode Action_Definition_Format1 due to wrong or invalid input")
-	}
-	newBuffer = C.GoBytes(cptr, (C.int(Size)+7)/8)
-	return
-}
-
-func (e *E2sm) ActionDefinitionFormat3Encode(Buffer []byte, ActionDefinitionFmt3 E2SM_KPM_ActionDefinition_Format3) (newBuffer []byte, err error) {
-
-	Length := len(ActionDefinitionFmt3.measCondList)
-	Measurement_Condition_List := []*C.MeasurementCondItem_t{} //It is golang type pointer >> golang memory.
-
-	for i := 0; i < Length; i++ {
-
-		// Pack MatchingCondItem
-		Measurement_Label_List := []*C.MeasurementLabel_t{}
-
-		MatchCondLength := 1
-		//MatchCondLength := len(ActionDefinitionFmt3.measCondList[i].matchingCond) => Default 1
-
-		for j := 0; j < MatchCondLength; j++ {
-			//Todo: Currently using default value
-			True := (*C.int)(C.malloc(C.sizeof_int))
-			defer C.free(unsafe.Pointer(True))
-
-			*True = 0
-
-			MeasurementLabel := (*C.MeasurementLabel_t)(C.malloc(C.sizeof_MeasurementLabel_t))
-			defer C.free(unsafe.Pointer(MeasurementLabel))
-			*MeasurementLabel = C.MeasurementLabel_t{
-				noLabel:          (*C.long)(unsafe.Pointer(True)),
-				plmnID:           nil,
-				sliceID:          nil,
-				fiveQI:           nil,
-				qFI:              nil,
-				qCI:              nil,
-				qCImax:           nil,
-				qCImin:           nil,
-				aRPmax:           nil,
-				aRPmin:           nil,
-				bitrateRange:     nil,
-				layerMU_MIMO:     nil,
-				sUM:              nil,
-				distBinX:         nil,
-				distBinY:         nil,
-				distBinZ:         nil,
-				preLabelOverride: nil,
-				startEndInd:      nil,
-				min:              nil,
-				max:              nil,
-				avg:              nil,
-			}
-			Measurement_Label_List = append(Measurement_Label_List, MeasurementLabel)
-		}
-
-		MatchingCondList := C.Pack_Matching_Condition_List(&Measurement_Label_List[0], nil, C.size_t(MatchCondLength), C.size_t(0))
-
-		// Pack MeasurementConditionItem
-		switch ActionDefinitionFmt3.measCondList[i].measType.(type) {
-		case PrintableString:
-			//Using C to allocate memory for C structure
-			measName := (*C.MeasurementTypeName_t)(C.malloc(C.sizeof_MeasurementTypeName_t))
-			defer C.free(unsafe.Pointer(measName))
-
-			measName.buf = (*C.uchar)(C.CBytes(ActionDefinitionFmt3.measCondList[i].measType.(PrintableString).Buf))
-			measName.size = C.size_t(len(ActionDefinitionFmt3.measCondList[i].measType.(PrintableString).Buf))
-
-			MeasurementConditionItem := C.Pack_Measurement_Condition_Item(measName, nil, MatchingCondList)
-			if MeasurementConditionItem == nil {
-				C.free(unsafe.Pointer(measName))
-				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Condition_Item due to wrong or invalid input")
-			}
-			Measurement_Condition_List = append(Measurement_Condition_List, MeasurementConditionItem)
-		case int64:
-			//Using C to allocate memory for C structure
-			measID := (*C.MeasurementTypeID_t)(C.malloc(C.sizeof_MeasurementTypeID_t))
-			defer C.free(unsafe.Pointer(measID))
-
-			*measID = C.long(ActionDefinitionFmt3.measCondList[i].measType.(int64))
-
-			MeasurementConditionItem := C.Pack_Measurement_Condition_Item(nil, measID, MatchingCondList)
-			if MeasurementConditionItem == nil {
-				C.free(unsafe.Pointer(measID))
-				return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Pack_Measurement_Condition_Item due to wrong or invalid input")
-			}
-			Measurement_Condition_List = append(Measurement_Condition_List, MeasurementConditionItem)
-		default:
-		}
-
-	}
-
-	MeasurementCondList := C.Pack_Measurement_Condition_List(&Measurement_Condition_List[0], C.size_t(Length))
-	if MeasurementCondList == nil {
-		return make([]byte, 0), errors.New("e2sm wrapper is unable to pack Measurement_Condition_List due to wrong or invalid input")
-	}
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// Pack CGI
-	CGI := &C.CGI_t{}
-	CGI = nil // If cellGlobalID == nil, CGI == nil
-
-	if ActionDefinitionFmt3.cellGlobalID != nil {
-		//Parse PLMNId
-		PLMNIdBuf, err := ParsePlmnId(ActionDefinitionFmt3.cellGlobalID.pLMNIdentity)
-		if err != nil {
-			return make([]byte, 0), err
-		}
-
-		PlmnId := (*C.PLMNIdentity_t)(C.malloc(C.sizeof_PLMNIdentity_t))
-		defer C.free(unsafe.Pointer(PlmnId))
-
-		PlmnId.buf = (*C.uchar)(C.CBytes(PLMNIdBuf))
-		PlmnId.size = C.size_t(3) //PLMNId use 3 Octets
-
-		// Parse CellId
-		NrCellId := &C.NRCellIdentity_t{}
-		NrCellId = nil
-		EutraCellId := &C.EUTRACellIdentity_t{}
-		EutraCellId = nil
-
-		if ActionDefinitionFmt3.cellGlobalID.NodebType == 2 {
-
-			NrCellIdBuf, err := ParseCellId(ActionDefinitionFmt3.cellGlobalID.CellIdentity)
-			if err != nil {
-				return make([]byte, 0), err
-			}
-
-			NrCellId = (*C.NRCellIdentity_t)(C.malloc(C.sizeof_NRCellIdentity_t))
-			defer C.free(unsafe.Pointer(NrCellId))
-
-			NrCellId.buf = (*C.uchar)(C.CBytes(NrCellIdBuf))
-			NrCellId.size = C.size_t(5) // Total 5 Bytes = 40 bits, only use 36bits in 5G.
-			NrCellId.bits_unused = C.int(4)
-		} // Todo: add EutraCellId Support
-
-		//Pack into ASN.1 Format
-		CGI = C.Pack_Cell_Global_Id(PlmnId, NrCellId, EutraCellId)
-		if CGI == nil {
-			return make([]byte, 0), errors.New("e2sm wrapper is unable to pack CGI due to wrong or invalid input")
-		}
-
-	}
-
-	cptr := unsafe.Pointer(&Buffer[0])
-
-	Size := C.Encode_Action_Definition_Format3(cptr, C.size_t(len(Buffer)), MeasurementCondList, C.ulong(ActionDefinitionFmt3.granulPeriod), CGI, C.int(ASNPrintFlag))
-	if Size < 0 {
-		return make([]byte, 0), errors.New("e2sm wrapper is unable to encode Action_Definition_Format3 due to wrong or invalid input")
-	}
-	newBuffer = C.GoBytes(cptr, (C.int(Size)+7)/8)
 	return
 }
 
@@ -890,6 +589,8 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 			var sizeof_MeasurementCondUEidItem_t *C.MeasurementCondUEidItem_t
 			MeasurementCondUEidItem_C := *(**C.MeasurementCondUEidItem_t)(unsafe.Pointer(uintptr(unsafe.Pointer(E2SM_KPM_IndicationMessage_Format2_C.measCondUEidList.list.array)) + (uintptr)(i)*unsafe.Sizeof(sizeof_MeasurementCondUEidItem_t)))
 
+			xapp.Logger.Info("Handle MeasurementCondUEidItem_C")
+
 			measType := int32(MeasurementCondUEidItem_C.measType.present)
 			switch measType {
 			case 1:
@@ -916,15 +617,15 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 				var sizeof_MatchingCondItem_t *C.MatchingCondItem_t
 				MatchingCondItem_C := *(**C.MatchingCondItem_t)(unsafe.Pointer(uintptr(unsafe.Pointer(MeasurementCondUEidItem_C.matchingCond.list.array)) + (uintptr)(j)*unsafe.Sizeof(sizeof_MatchingCondItem_t)))
 
-				matchingCondItemType := int32(MatchingCondItem_C.present)
+				matchingCondItemType := int32(MatchingCondItem_C.matchingCondChoice.present)
 				// xapp.Logger.Info("Handle MatchingCondItem Type %d !", matchingCondItemType)
 
 				switch matchingCondItemType {
 				case 1:
 					measLabel := MeasurementLabel{}
 					// *MatchingCondItem_C.matchingCondChoice.choice[0]
-					measLabel_C := *(**C.MeasurementLabel_t)(unsafe.Pointer(&MatchingCondItem_C.choice[0]))
-					// measLabel_C := (*C.MeasurementLabel_t)(unsafe.Pointer(&MatchingCondItem_C.matchingCondChoice.choice[0]))
+					// measLabel_C := *(**C.MeasurementLabel_t)(unsafe.Pointer(&MatchingCondItem_C.choice[0]))
+					measLabel_C := *(**C.MeasurementLabel_t)(unsafe.Pointer(&MatchingCondItem_C.matchingCondChoice.choice[0]))
 
 					if measLabel_C.noLabel != nil {
 
@@ -1057,7 +758,7 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 				case 2:
 					testCondInfo := TestCondInfo{}
 
-					testCondInfo_C := (*C.TestCondInfo_t)(unsafe.Pointer(&MatchingCondItem_C.choice[0]))
+					testCondInfo_C := (*C.TestCondInfo_t)(unsafe.Pointer(&MatchingCondItem_C.matchingCondChoice.choice[0]))
 
 					testType := int32(testCondInfo_C.testType.present)
 					switch testType {
