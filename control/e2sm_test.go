@@ -13,7 +13,7 @@ func TestE2smRanFunctionDefinitionDecode(t *testing.T) {
 	RanFuncDef, err := e2sm.RanFunctionDefinitionDecode(s)
 
 	if err != nil {
-		t.Error("Failed to decode RanFunctionDefinition., err = ", err)
+		t.Error("Failed to decode RanFunctionDefinition, err = ", err)
 	} else {
 		fmt.Println("==== Golang Deocode =====")
 
@@ -394,17 +394,7 @@ func Test_GenerateActionDefinitionFormat3EncodedByteForVIAVI_RIC_Testv1_5_Scenar
 
 	measLabelList := []string{"DRB.UECqiDl", "DRB.UECqiDl.PCC", "DRB.UECqiDl.SCC", "DRB.UECqiUl", "DRB.UECqiUl.PCC", "DRB.UECqiUl.SCC", "DRB.UEThpDl",
 		"DRB.UEThpDl.PCC", "DRB.UEThpDl.SCC", "DRB.UEThpUl", "DRB.UEThpUl.PCC", "DRB.UEThpUl.SCC", "QosFlow.TotPdcpPduVolumeDl",
-		"RRU.PrbUsedDl", "RRU.PrbUsedDl.PCC", "RRU.PrbUsedDl.SCC", "RRU.PrbUsedUl", "RRU.PrbUsedUl.PCC", "RRU.PrbUsedUl.SCC",
-		"TB.TotNbrDl", "TB.TotNbrDl.PCC", "TB.TotNbrDl.SCC", "TB.TotNbrUl", "TB.TotNbrUl.PCC", "TB.TotNbrUl.SCC",
-		"Viavi.Cell.id", "Viavi.Geo.x", "Viavi.Geo.y", "Viavi.Geo.z", "Viavi.Nb1.RsSinr", "Viavi.Nb1.Rsrp", "Viavi.Nb1.Rsrq",
-		"Viavi.Nb1.id", "Viavi.Nb2.RsSinr", "Viavi.Nb2.Rsrp", "Viavi.Nb2.Rsrq", "Viavi.Nb2.id", "Viavi.QoS.5qi",
-		"Viavi.QoS.CarrierGfbr.PCC", "Viavi.QoS.CarrierGfbr.SCC", "Viavi.QoS.CarrierTput.PCC", "Viavi.QoS.CarrierTput.SCC",
-		"Viavi.QoS.CellId", "Viavi.QoS.DrbId", "Viavi.QoS.Gfbr", "Viavi.QoS.Mfbr", "Viavi.QoS.Priority", "Viavi.QoS.SecCellId",
-		"Viavi.QoS.SliceId", "Viavi.QoS.TargetTput", "Viavi.QoS.UeRnti", "Viavi.Slice.id", "Viavi.UE.BeamId", "Viavi.UE.BeamId.PCC",
-		"Viavi.UE.BeamId.SCC", "Viavi.UE.FrameCnt", "Viavi.UE.FrameCnt.PCC", "Viavi.UE.FrameCnt.SCC",
-		"Viavi.UE.RsSinr", "Viavi.UE.RsSinr.PCC", "Viavi.UE.RsSinr.SCC", "Viavi.UE.Rsrp", "Viavi.UE.Rsrp.PCC", "Viavi.UE.Rsrp.SCC",
-		"Viavi.UE.Rsrq", "Viavi.UE.Rsrq.PCC", "Viavi.UE.Rsrq.SCC", "Viavi.UE.anomalies", "Viavi.UE.id", "Viavi.UE.servingDistance",
-		"Viavi.UE.speed", "Viavi.UE.targetThroughputDl", "Viavi.UE.targetThroughputUl"}
+		"RRU.PrbUsedDl", "RRU.PrbUsedDl.PCC", "RRU.PrbUsedDl.SCC"}
 
 	ActionDefinitionFmt3 := E2SM_KPM_ActionDefinition_Format3{
 		measCondList: []MeasurementCondItem{},

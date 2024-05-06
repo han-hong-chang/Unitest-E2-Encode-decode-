@@ -8,17 +8,27 @@ package control
 import "C"
 
 import (
+	"fmt"
 	"errors"
 	"strconv"
 	"unsafe"
 
-	xapp "gerrit.o-ran-sc.org/r/ric-plt/xapp-frame/pkg/xapp"
+	
 )
 
 const (
 	E2smKPMv2OId string = "1.3.6.1.4.1.53148.1.2.2.2" //E2SM-KPMv2 OID
 	ASNPrintFlag int    = 1
 )
+var (
+	cellMetricsInfo  []string
+	sliceMetricsInfo []string
+	cellSubMetrics []string
+	sliceSubMetrics []string
+	userName = "admin"
+	password = "WKgvgGt5ni"
+)
+
 
 type E2sm struct {
 }
@@ -173,9 +183,9 @@ func (e *E2sm) ActionDefinitionFormat1EncodeInC(Buffer []byte, measInfoActionLis
 	subStr := FindIntersectionWithOrder(cellMetricsInfo, measNameStr)
 	cellSubMetrics = subStr
 
-	xapp.Logger.Debug("cell Metrics Info = %v", cellMetricsInfo)
-	xapp.Logger.Debug("Measurement Name String = %v", measNameStr)
-	xapp.Logger.Debug("Sub string = %v", subStr)
+	fmt.Printf("cell Metrics Info = %v", cellMetricsInfo)
+	fmt.Printf("Measurement Name String = %v", measNameStr)
+	fmt.Printf("Sub string = %v", subStr)
 
 	subName := make([][30]byte, len(subStr))
 	subNameLen := make([]int32, len(subStr))
@@ -218,9 +228,9 @@ func (e *E2sm) ActionDefinitionFormat3EncodeInC(Buffer []byte, measInfoActionLis
 	subStr := FindIntersectionWithOrder(sliceMetricsInfo, measNameStr)
 	sliceSubMetrics = subStr
 
-	xapp.Logger.Debug("Slice Metrics Info = %v", sliceMetricsInfo)
-	xapp.Logger.Debug("Measurement Name String = %v", measNameStr)
-	xapp.Logger.Debug("Sub string = %v", subStr)
+	fmt.Printf("Slice Metrics Info = %v", sliceMetricsInfo)
+	fmt.Printf("Measurement Name String = %v", measNameStr)
+	fmt.Printf("Sub string = %v", subStr)
 
 	if len(subStr) == 0 {
 		return make([]byte, 0), errors.New("Match subscription measurement name is empty")
@@ -883,7 +893,7 @@ func (e *E2sm) IndicationMessageDecode(Buffer []byte) (IndiMsg *E2SM_KPM_Indicat
 		IndiMsgFmt2.measCondUEidList = []MeasurementCondUEidItem{}
 		measCondUEidItem := MeasurementCondUEidItem{}
 
-		xapp.Logger.Info("Handle measCondUEidList")
+		fmt.Println("Handle measCondUEidList")
 
 		// Iteratively parse each item to list with i
 		for i := 0; i < int(E2SM_KPM_IndicationMessage_Format2_C.measCondUEidList.list.count); i++ {
