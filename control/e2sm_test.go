@@ -13,7 +13,7 @@ func TestE2smRanFunctionDefinitionDecode(t *testing.T) {
 	RanFuncDef, err := e2sm.RanFunctionDefinitionDecode(s)
 
 	if err != nil {
-		t.Error("Failed to decode RanFunctionDefinition, err = ", err)
+		t.Error("Failed to decode RanFunctionDefinition., err = ", err)
 	} else {
 		fmt.Println("==== Golang Deocode =====")
 
